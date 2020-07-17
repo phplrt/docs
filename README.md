@@ -1,7 +1,7 @@
 <p align="center">
     <a href="https://phplrt.org/">
-        <img src="https://avatars2.githubusercontent.com/u/49816277?s=128" width="128" alt="Phplrt" />
-    </a>
+        <img src="https://avatars2.githubusercontent.com/u/49816277?s=128" width="128" style="width:128px;height:128px" alt="Phplrt" />
+        </a>
 </p>
 <p align="center">
     <a href="https://travis-ci.org/phplrt/phplrt"><img src="https://travis-ci.org/phplrt/phplrt.svg?branch=master" alt="Travis CI" /></a>
@@ -16,39 +16,22 @@
     <a href="https://raw.githubusercontent.com/phplrt/phplrt/master/LICENSE.md"><img src="https://poser.pugx.org/phplrt/phplrt/license" alt="License MIT"></a>
 </p>
 
-<p align="center">
-    <a href="https://opencollective.com/phplrt/donate?" target="_blank">
-      <img src="https://opencollective.com/phplrt/donate/button@2x.png" width="200" />
-    </a>
-</p>
-
 ## Thanks To
 
-<table>
-    <tr>
-        <td width="225" align="center">
-            <a href="https://www.antlr.org/" target="_blank" rel="nofollow">
-                <img src="https://phplrt.org/img/thanks/antlr-logo.png" alt="Antlr" height="48" />
-            </a>
-        </td>
-        <td width="225" align="center">
-            <a href="https://hoa-project.net/" target="_blank" rel="nofollow">
-                <img src="https://phplrt.org/img/thanks/hoa.svg" alt="Hoa Project" height="48" />
-            </a>
-        </td>
-        <td width="225" align="center">
-            <a href="https://github.com/nikic/PHP-Parser" target="_blank" rel="nofollow">
-                <img src="https://phplrt.org/img/thanks/php-parser.png" alt="nikic/PHP-Parser" height="48" />
-            </a>
-        </td>
-        <td width="225" align="center">
-            <a href="https://www.jetbrains.com/" target="_blank" rel="nofollow">
-                <img src="https://phplrt.org/img/thanks/jetbrains.svg" alt="JetBrains" height="64" />
-            </a>
-        </td>
-    </tr>
-</table>
-
+<p align="center">
+    <a href="https://www.antlr.org/" target="_blank" rel="nofollow">
+        <img src="/img/thanks/antlr-logo.png" alt="Antlr" style="height: 48px; margin: 0 20px" />
+    </a>
+    <a href="https://hoa-project.net/" target="_blank" rel="nofollow">
+        <img src="/img/thanks/hoa.svg" alt="Hoa Project" style="height: 48px; margin: 0 20px" />
+    </a>
+    <a href="https://github.com/nikic/PHP-Parser" target="_blank" rel="nofollow">
+        <img src="/img/thanks/php-parser.png" alt="nikic/PHP-Parser" style="height: 48px; margin: 0 20px" />
+    </a>
+    <a href="https://www.jetbrains.com/" target="_blank" rel="nofollow">
+            <img src="/img/thanks/jetbrains.svg" alt="JetBrains" style="height: 64px; margin: 0 20px" />
+        </a>
+</p>
 
 ## Introduction
 
@@ -65,7 +48,7 @@ installed using the following command in a root of your project:
 $ composer require phplrt/phplrt
 ```
 
-More detailed installation instructions [are here](https://phplrt.org/#/installation).
+More detailed installation instructions [are here](/docs/installation).
 
 ## Quick Start
 
@@ -120,7 +103,3 @@ echo $compiler->parse('2 + 2');
 ```php
 \file_put_contents(__DIR__ . '/grammar.php', (string)$compiler->build());
 ```
-
-## Documentation
-
-- https://phplrt.org/
