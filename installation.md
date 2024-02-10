@@ -8,7 +8,7 @@ using `composer` dependency mananger.
 
 ## Requirements
 
-  * PHP 8.1+
+  * PHP 7.4+
   * [SPL Extension](https://www.php.net/manual/en/book.spl.php)
   * [PCRE Extension](https://php.net/manual/en/book.pcre.php)
   * [Mbstring Extension](https://www.php.net/manual/en/mbstring.installation.php)

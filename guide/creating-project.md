@@ -15,7 +15,7 @@ result, the file will look something like this:
 {
     "name": "app/calculator",
     "require": {
-        "php": "^8.1",
+        "php": "^7.4|^8.0",
         "phplrt/runtime": "^3.2"
     },
     "autoload": {
