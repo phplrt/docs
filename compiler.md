@@ -174,7 +174,7 @@ The kinds you are likely to meet:
 | `UnsupportedTransitionException` | A token switching between two named states                                              |
 | `CompilationFailedException`     | The grammar is well-formed but wrong: left recursion, an undefined rule, a broken regex |
 
-## Next
+## Whats Next?
 
 - [Grammar Syntax](/docs/compiler/grammar) - everything a `.pp3` file can say.
 - [Legacy Grammar Syntax](/docs/compiler/legacy-grammar) - everything a `.pp2`

@@ -6,7 +6,8 @@
     },
     "Guide": {
         "Introduction": "guide/introduction",
-        "Quick Start": "guide/quick-start"
+        "Quick Start": "guide/quick-start",
+        "Best Practices": "guide/best-practice"
     },
     "Compiler": {
         "Usage": "compiler",

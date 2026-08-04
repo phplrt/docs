@@ -244,7 +244,7 @@ That is usually where you want to be - see [Compiler](/docs/compiler). The
 builder API is for the cases where the token list is not known in advance:
 generated from a config file, a database, a plugin system.
 
-## Next
+## Whats Next?
 
 - [Tokens and Channels](/docs/lexer/tokens) - the token API, channels and
   captures.
