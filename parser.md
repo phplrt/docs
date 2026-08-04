@@ -291,15 +291,15 @@ $parser->analyze($source, Mode::Tolerant); // the default - builds the value
 $parser->analyze($source, Mode::SyntaxCheck); // recognizes only, runs no reducer
 ```
 
-`Mode::Fast` is what `check()` used to be, except that it tells you *how much*
-of the source is valid rather than just whether all of it is:
+`Mode::SyntaxCheck` is what `check()` used to be, except that it tells you
+*how much* of the source is valid rather than just whether all of it is:
 
 ```php
-$parser->analyze($source, Mode::Fast) instanceof SuccessfulResult; // true or false
+$parser->analyze($source, Mode::SyntaxCheck) instanceof SuccessfulResult; // true or false
 ```
 
 The mode changes nothing about how much of the source is read - only whether
-the value is built. In `Mode::Fast` every `value` is `null`.
+the value is built. In `Mode::SyntaxCheck` every `value` is `null`.
 
 ### The Rules Are Greedy
 
@@ -311,7 +311,7 @@ what a prompt needs:
 
 ```php
 // Keep reading lines while the input is not a complete expression
-while (!$parser->analyze($input, Mode::Fast) instanceof SuccessfulResult) {
+while (!$parser->analyze($input, Mode::SyntaxCheck) instanceof SuccessfulResult) {
     $input = new Source($input->content . "\n" . readline('... '));
 }
 ```
