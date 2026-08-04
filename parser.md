@@ -101,9 +101,9 @@ builds the result only after the whole input has been recognized.
 That is a mouthful, so taken apart:
 
 **Table-driven.** The grammar is a flat array of rules addressed by index, not
-a set of generated functions. Recognizing a rule is `match($id)`, which looks
-the definition up and dispatches on its type. This is what makes a grammar
-plain data: it can be optimized, dumped to a file and loaded back.
+a set of generated functions. A rule is looked up by its id and recognized
+according to what kind of rule it is. This is what makes a grammar plain data:
+it can be optimized, dumped to a file and loaded back.
 
 **Recursive descent with backtracking.** Rules are tried top-down. When an
 alternative fails, the token stream is rewound to where the rule started and
@@ -112,26 +112,19 @@ There is no memoization - this is not a packrat parser - so a grammar that
 backtracks heavily pays for it. In practice the FIRST sets keep that from
 happening.
 
-**FIRST-set prediction.** Before descending into a rule, the parser checks
-whether the current token can start it at all:
+**FIRST-set prediction.** Every rule knows which tokens are allowed to start
+it, so before descending into a rule the parser asks whether the token in front
+of it can begin that rule at all, and gives up right away when it cannot. That
+turns "try this rule and find out" into a single lookup, which is where most of
+the speed comes from. The tables are computed while the grammar is being built,
+so a parser assembled without them is a plain PEG: it reads the same sources,
+only slower.
 
-```php
-if (!isset($startTokens[$rule][$token->id]) && !$matchesEmptyInput[$rule]) {
-    return false;
-}
-```
-
-`startTokens` is computed by the builder for every rule. It turns "try this
-rule and find out" into one array lookup, which is where most of the speed
-comes from - and it is why *not* passing the lookahead tables to `Parser`
-leaves you with a plain PEG that still works but is slower.
-
-**Deferred tree construction.** Recognition produces a flat list of trace
-entries - a rule id on the way in, the tokens read, a negative rule id on the
-way out. Nothing is built while the input is being read, and a branch that
-fails simply has its entries truncated. The tree is assembled afterwards, in
-one pass, by running the reducers bottom-up. `analyze()` in `Mode::Fast`
-skips that pass entirely.
+**Deferred tree construction.** Nothing is built while the input is being read.
+The parser only writes down what it has recognized, and a branch that fails
+leaves nothing behind. The result is assembled afterwards, in one pass, by
+running the reducers bottom-up - which is why an analysis that only checks the
+syntax costs less than one building a value.
 
 Two consequences are worth knowing before you write a grammar.
 
