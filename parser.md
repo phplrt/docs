@@ -173,13 +173,13 @@ use Phplrt\Parser\Exception\UnexpectedTokenException;
 try {
     $parser->parse(new VirtualFile('expr.txt', "1 + 2\n3 * (4 + )\n"));
 } catch (UnexpectedTokenException $e) {
-    echo $e->getMessage(); // Syntax error, unexpected "3" (T_NUMBER)
+    echo $e->getMessage(); // Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
     echo $e;               // ...plus the snippet below
 }
 ```
 
 ```
-error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER)
+error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
  --> expr.txt:2:1
   |
 1 | 1 + 2
@@ -187,6 +187,12 @@ error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER)
   | ^
 3 |
 ```
+
+What could have been read instead comes from a table the compiler writes down:
+a token is called by its name, and one declared inline stands for what it is
+recognized by - `"+"` for a value, `/\d++/` for a pattern. Several of them read
+as `one of X, Y, Z expected`. A parser built by hand and given no such table
+says nothing about them, and the message ends after the token it stopped on.
 
 The exception carries the token it choked on, so you can build your own
 message:
@@ -212,7 +218,7 @@ A parse succeeds only if the grammar reads the whole source. Trailing junk is
 an error, not a stopping point:
 
 ```php
-$parser->parse(new Source('2 2')); // Syntax error, unexpected "2" (T_NUMBER)
+$parser->parse(new Source('2 2')); // Syntax error, unexpected "2" (T_DIGIT)
 ```
 
 ## Analysing A Source
@@ -237,24 +243,24 @@ $result->value;                   // 4 - the same value parse() gives for "2 + 2
 $result->token->offset;           // 6 - where the fragment ends
 ```
 
-| Result             | Means                                     | Carries              |
-|--------------------|-------------------------------------------|----------------------|
-| `SuccessfulResult` | the grammar read the source in full       | `value`              |
-| `PartialResult`    | the grammar read a fragment and stopped   | `value`, `token`     |
-| `FailureResult`    | the grammar read nothing at all           | `token`              |
+| Result             | Means                                   | Carries                   |
+|--------------------|-----------------------------------------|---------------------------|
+| `SuccessfulResult` | the grammar read the source in full     | `value`                   |
+| `PartialResult`    | the grammar read a fragment and stopped | `value`, `token`, `error` |
+| `FailureResult`    | the grammar read nothing at all         | `token`, `error`          |
 
-All three carry `diagnostics` - a list of what the analysis has to say. Each
-one holds the **error the source would be rejected with**, so it already knows
-how to print itself along with the fragment it occurred in:
+A source read in full has nothing to report, so only the other two carry an
+`error`. The reading stops where it can no longer go on, so there is exactly one
+thing to say - and it is the **very exception the source would be rejected
+with**, not a description of it, so it already knows how to print itself along
+with the fragment it occurred in:
 
 ```php
-foreach ($result->diagnostics as $diagnostic) {
-    echo $diagnostic->error;
-}
+echo $result->error;
 ```
 
 ```
-error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER)
+error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
  --> expr.txt:2:1
   |
 1 | 1 + 2
@@ -263,12 +269,13 @@ error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER)
 3 |
 ```
 
-The parts are reachable without unwrapping it:
+Its parts are reachable one by one:
 
 ```php
-$diagnostic->message;  // Syntax error, unexpected "3" (T_NUMBER)
-$diagnostic->token;    // the token it is about
-$diagnostic->expected; // ids of the tokens that could have been read instead
+$result->error->getMessage(); // Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
+$result->error->token;        // the token it is about
+$result->error->source;       // the source it occurred in
+$result->error->getCode();    // and the rest of what an exception carries
 ```
 
 It is the very same object `parse()` throws for the same source - not one
@@ -276,8 +283,8 @@ built to look like it - so an editor and a build never disagree about what is
 wrong. Rethrowing it is a valid way to turn an analysis back into a failure:
 
 ```php
-if (!$result instanceof SuccessfulResult) {
-    throw $result->diagnostics[0]->error;
+if ($result instanceof FailureResult) {
+    throw $result->error;
 }
 ```
 
@@ -296,7 +303,10 @@ $parser->analyze($source, Mode::SyntaxCheck); // recognizes only, runs no reduce
 *how much* of the source is valid rather than just whether all of it is:
 
 ```php
-$parser->analyze($source, Mode::SyntaxCheck) instanceof SuccessfulResult; // true or false
+$result = $parser->analyze($source, Mode::SyntaxCheck);
+
+$result instanceof SuccessfulResult; // the grammar has read something
+$result instanceof PartialResult;    // ...and there is more to read
 ```
 
 The mode changes nothing about how much of the source is read - only whether
@@ -311,8 +321,8 @@ finish. That is what tells "not finished yet" from "written wrong", which is
 what a prompt needs:
 
 ```php
-// Keep reading lines while the input is not a complete expression
-while (!$parser->analyze($input, Mode::SyntaxCheck) instanceof SuccessfulResult) {
+// Keep reading lines while the expression is only started
+while ($parser->analyze($input, Mode::SyntaxCheck) instanceof PartialResult) {
     $input = new Source($input->content . "\n" . readline('... '));
 }
 ```

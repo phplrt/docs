@@ -171,7 +171,7 @@ Errors that point at a piece of source code are much easier to fix than
 errors that do not. This component renders them:
 
 ```
-error[UnexpectedTokenException]: Syntax error, unexpected "+" (T_PLUS)
+error[UnexpectedTokenException]: Syntax error, unexpected "+" (T_PLUS), T_NUMBER expected
  --> example.txt:1:5
   |
 1 | 2 + + 3

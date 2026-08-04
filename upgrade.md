@@ -159,15 +159,22 @@ $context->buffer->current(); // where the parser stopped
 
 // 4.x
 use Phplrt\Parser\Analysis\Mode;
+use Phplrt\Parser\Analysis\Result\PartialResult;
 use Phplrt\Parser\Analysis\Result\SuccessfulResult;
 
-$parser->analyze($source, Mode::SyntaxCheck) instanceof SuccessfulResult; // true or false
+$result = $parser->analyze($source, Mode::SyntaxCheck);
+
+$result instanceof SuccessfulResult; // the grammar has read something
+$result instanceof PartialResult;    // ...and there is more to read
 
 $result = $parser->analyze($source);
 
-$result->value;       // what the fragment reduced to
-$result->token;       // where the parser stopped
-$result->diagnostics; // and what stands in the way
+$result->value; // what has been read reduced to
+
+// A source read in full has nothing more to say, so these belong to the two
+// results that mean it has not been
+$result->token;      // where the parser stopped
+$result->error;      // and the exception it would be rejected with
 ```
 
 Two things changed beyond the names. Nothing is kept on the parser between

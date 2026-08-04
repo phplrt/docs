@@ -227,7 +227,8 @@ final readonly class JsonParser extends CompiledJsonParser
 
 The generated class carries a `TResult` template parameter, so
 `@template-extends` tells a static analyser what a parse produces - including
-through `analyze()`, whose result is a `Result<TResult>`:
+through `analyze()`, whose result is a `SuccessfulResult<TResult>` or a
+`FailureResult`:
 
 ```php
 $result = $parser->analyze($source);

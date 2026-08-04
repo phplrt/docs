@@ -264,7 +264,7 @@ $parser->parse(new VirtualFile('config.txt', <<<'CONF'
 ```
 
 ```
-error[UnexpectedTokenException]: Syntax error, unexpected "=" (T_EQUAL)
+error[UnexpectedTokenException]: Syntax error, unexpected "=" (T_EQUAL), one of T_BOOLEAN, T_STRING, T_NUMBER expected
  --> config.txt:2:11
   |
 1 | name = "phplrt"

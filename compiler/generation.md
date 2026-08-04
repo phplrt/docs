@@ -96,6 +96,7 @@ readonly class SumParser extends \Phplrt\Parser\Parser
             lookahead: [ /* ... */ ],
             kept: [ /* ... */ ],
             choicePrediction: [ /* ... */ ],
+            expectations: [ /* ... */ ],
         );
     }
 

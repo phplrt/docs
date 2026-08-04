@@ -7,7 +7,7 @@ An error that says "syntax error at offset 137" is technically correct and
 practically useless. Phplrt errors point at the source:
 
 ```
-error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER)
+error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
  --> expr.txt:2:1
   |
 1 | 1 + 2
@@ -28,7 +28,7 @@ use Phplrt\Source\VirtualFile;
 try {
     $parser->parse(new VirtualFile('expr.txt', $input));
 } catch (UnexpectedTokenException $e) {
-    echo $e->getMessage(); // Syntax error, unexpected "3" (T_NUMBER)
+    echo $e->getMessage(); // Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
     echo $e;               // ...plus the snippet above
 }
 ```
@@ -52,7 +52,7 @@ $parser->parse(new Source($input));
 ```
 
 ```
-error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER)
+error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
   |
 1 | 3
   | ^
