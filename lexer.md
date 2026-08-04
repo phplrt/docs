@@ -72,9 +72,9 @@ The same applies to keywords and identifiers - declare `if` before
 
 ## Hiding Whitespace
 
-You almost never want whitespace in a grammar. Mark it as **hidden** and it
-still gets recognized (so the offsets stay right) but the parser will not
-see it:
+You almost never want whitespace in a grammar. Mark it as **hidden** and it is
+still recognized (so the offsets stay right) but it is left out of the stream
+entirely:
 
 ```php
 $builder->addPattern('\s++')
@@ -86,8 +86,10 @@ $builder->addPattern('//[^\n]*+')
 Note that the token above has no name. A hidden token is not referred to by
 anything, so naming it is optional.
 
-`hide()` is shorthand for putting the token on the `Hidden` channel - see
-[Tokens and Channels](/docs/lexer/tokens) for the general case.
+`hide()` is shorthand for putting the token on the `Hidden` channel, and that
+is the one channel a lexer leaves out by default - see
+[Tokens and Channels](/docs/lexer/tokens) for the general case, including how
+to have the hidden tokens reported after all.
 
 ## Regex Modifiers
 

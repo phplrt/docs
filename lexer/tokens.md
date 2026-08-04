@@ -78,15 +78,16 @@ token straight into a message without worrying about what is in it.
 
 ## Channels
 
-A channel is a label on a token. The lexer emits everything, and the channel
-decides who gets to see it.
+A channel is a label on a token. The lexer decides which channels it reports,
+and a token on any other channel is read like any other - so the offsets stay
+right - and then stepped over.
 
 There are four built-in channels:
 
 | Channel      | Meaning                                                    |
 |--------------|------------------------------------------------------------|
-| `Default`    | An ordinary token. The parser reads these.                  |
-| `Hidden`     | Recognized, but not passed to the parser: whitespace, comments. |
+| `Default`    | An ordinary token. This is what a grammar is written in terms of. |
+| `Hidden`     | Read, but not reported: whitespace, comments.               |
 | `Unknown`    | Text the lexer did not recognize.                           |
 | `EndOfInput` | The terminal token, exactly one per stream.                 |
 
@@ -100,9 +101,9 @@ $builder->addPattern('\s++')->show();  // back to Default
 
 ### Custom Channels
 
-Hiding a token throws it away. Sometimes you want to *keep* it, just not in
-the grammar - documentation comments are the usual example. Give it a channel
-of its own:
+Hiding a token throws it away. Sometimes you want to *keep* it, just told
+apart from the code around it - documentation comments are the usual example.
+Give it a channel of its own:
 
 ```php
 $builder->addPattern('\d++', 'T_DIGIT');
@@ -120,68 +121,72 @@ T_COMMENT on comments
 T_DIGIT on Default
 ```
 
-The parser skips everything that is not on `Default`, so `T_COMMENT` never
-reaches your grammar - but it is right there in the token stream if a
-documentation generator wants it.
+`T_COMMENT` is in the stream like any other token, and the channel is what
+tells it apart: a documentation generator reads the `comments` tokens and
+ignores the rest.
 
-### Choosing What The Parser Sees
+### Choosing What Is Reported
 
-The parser filters the stream before it starts. By default it drops the
-`Hidden` channel and keeps the rest. Pass your own filter to change that:
+A lexer reports every channel except the ones it is told to skip, and by
+default that is `Hidden` alone:
+
+```php
+use Phplrt\Lexer\Lexer;
+
+Lexer::DEFAULT_SKIP_CHANNELS; // [Channel::Hidden]
+```
+
+Nothing stands between the lexer and the grammar, so this is also the answer to
+"what does the parser see": whatever the lexer reports.
+
+The list is a setting of the lexer, so it goes where the lexer is put together:
+
+```php
+use Phplrt\Lexer\Builder\Transformer\RuntimeLexerTransformer;
+
+$result = $builder->build();
+
+// Reports everything but the hidden tokens
+$lexer = $result->toLexer();
+
+// Reports everything, hidden tokens included
+$verbose = new RuntimeLexerTransformer(skip: [])
+    ->transform($result);
+```
+
+Channels are matched **by name**, so a custom one is skipped by naming it - the
+instance you construct does not have to be the one the token carries:
 
 ```php
 use Phplrt\Contracts\Lexer\Channel;
-use Phplrt\Parser\Internal\Filter\ChannelFilter;
+use Phplrt\Contracts\Lexer\UserDefinedChannel;
 
-$parser = new Parser(
-    lexer: $lexer,
-    grammar: $grammar,
-    initial: 0,
-    // Let the hidden tokens through after all
-    filter: new ChannelFilter([]),
+$parsing = new RuntimeLexerTransformer(skip: [
+    Channel::Hidden,
+    new UserDefinedChannel('comments'),
+])->transform($result);
+```
+
+One description therefore gives you as many lexers as there are readers of the
+source: one leaving the comments out for the parser, and one reporting them for
+the tool that wants them.
+
+That is where the list ends up anyway - `Lexer` takes it as an argument of its
+own, so a lexer assembled without the builder is configured the same way:
+
+```php
+use Phplrt\Lexer\Lexer;
+
+$lexer = new Lexer(
+    pattern: $result->pattern,
+    channels: $result->channels,
+    names: $result->names,
+    skip: [],
 );
 ```
 
-`ChannelFilter` compares channels by identity, which works for the built-in
-ones (they are enum cases) but *not* for custom ones: every lexer builds its
-own `UserDefinedChannel` instances, so the one you construct is never the one
-the token carries. Match on the name instead:
-
-```php
-use Phplrt\Contracts\Lexer\Channel;
-use Phplrt\Parser\Internal\Filter\FilterInterface;
-
-final class HiddenChannelsFilter implements FilterInterface
-{
-    /**
-     * @var list<non-empty-string>
-     */
-    private readonly array $excluded;
-
-    public function __construct(string ...$channels)
-    {
-        $this->excluded = [Channel::Hidden->name, ...$channels];
-    }
-
-    public function apply(iterable $tokens): iterable
-    {
-        foreach ($tokens as $token) {
-            if (!\in_array($token->channel->name, $this->excluded, true)) {
-                yield $token;
-            }
-        }
-    }
-}
-```
-
-```php
-$parser = new Parser(
-    lexer: $lexer,
-    grammar: $grammar,
-    initial: 0,
-    filter: new HiddenChannelsFilter('comments'),
-);
-```
+Skipping happens while the source is being read, so a token nobody is going to
+see is not built in the first place.
 
 ## Captures
 

@@ -50,9 +50,9 @@ A name and a regular expression, separated by whitespace. The name is
 whatever you like; by convention tokens are `SCREAMING_CASE` with a `T_`
 prefix, which makes them obvious in a rule.
 
-`%skip` declares a token the parser will never see. Use it for whitespace
-and comments - they still get recognized, so offsets stay correct, but they
-do not clutter the grammar:
+`%skip` declares a token that is read and then stepped over. Use it for
+whitespace and comments - they still get recognized, so offsets stay correct,
+but they never leave the lexer and do not clutter the grammar:
 
 ```pp3
 %skip T_WHITESPACE  \s++
@@ -121,16 +121,18 @@ read. There are three actions, and each is written as a call:
 
 ### channel(x)
 
-A [channel](/docs/lexer/tokens) keeps a token out of the grammar without
-throwing it away - documentation comments are the usual reason:
+A [channel](/docs/lexer/tokens) labels a token, so that a reader of the stream
+can tell it apart from the code around it - documentation comments are the
+usual reason:
 
 ```pp3
 %token T_DOC_COMMENT  /\*\*.*?\*/  -> channel(docblocks)
 ```
 
-The parser never sees it, but it is right there in the token stream for
-anything that wants it. `%skip` is shorthand for the built-in `Hidden`
-channel, so these two lines mean the same thing:
+A channel of your own is reported like any other, so the token is right there
+in the stream for anything that wants it; which channels are left out is a
+setting of the lexer. `%skip` is shorthand for the built-in `Hidden` channel -
+the one channel left out by default - so these two lines mean the same thing:
 
 ```pp3
 %skip  T_WHITESPACE  \s++

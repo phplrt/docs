@@ -64,7 +64,8 @@ constants, so you do not have to track the numbers yourself.
 > Likelihood Of Impact: **Medium**
 
 The lexer no longer takes a list of names to skip. Every token now carries a
-[channel](/docs/lexer/tokens), and the parser reads the default one.
+[channel](/docs/lexer/tokens), and the lexer reports every channel except the
+ones it is told to leave out - `Hidden` alone, unless you say otherwise.
 
 ```php
 // 3.x
@@ -75,9 +76,10 @@ $builder->addPattern('\s++', 'T_WHITESPACE')
     ->hide();
 ```
 
-Unlike skipping, a hidden token is still produced - so you can look at
-comments and whitespace when you need them, and custom channels let you keep
-a token out of the grammar without throwing it away.
+Unlike a skipped name, a channel is a decision you can revisit: the same token
+description gives you a lexer reporting the whitespace and the comments when
+you need to look at them, and custom channels let you keep a token in the
+stream and still tell it apart from the code.
 
 ### The Lexer Is Built, Not Configured
 
