@@ -94,7 +94,8 @@ readonly class SumParser extends \Phplrt\Parser\Parser
                 1 => self::reduceNumber(...),
             ],
             lookahead: [ /* ... */ ],
-            presentInTree: [ /* ... */ ],
+            kept: [ /* ... */ ],
+            choicePrediction: [ /* ... */ ],
         );
     }
 
@@ -392,7 +393,7 @@ $result->parser->initial;    // where parsing starts
 $result->parser->reducers;   // array<int, ReducerInterface>
 $result->parser->constants;  // ['Sum' => 0, ...] - named rules
 $result->parser->lookahead;
-$result->parser->presentInTree;
+$result->parser->kept;
 ```
 
 `OutputContext` carries what the caller asked for - `$context->namespace`,
