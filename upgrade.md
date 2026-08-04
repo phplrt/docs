@@ -242,8 +242,8 @@ new Repetition($ruleId, 0, \INF);
 ```
 
 `reduce()` is gone from the rule classes: matching is done by the parser's
-internal tracer, and the rules are pure data. This is what made the lookahead
-tables and code generation possible.
+internal tracer, and the rules are pure data. This is what made the up-front
+analysis and code generation possible.
 
 ### The Buffer Package Is Gone
 

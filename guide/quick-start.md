@@ -1,7 +1,24 @@
 # Quick Start
 
-Let's build a working calculator from scratch: `2 + 2 * 2` in, `6` out. It
-takes about thirty lines of grammar, and along the way you will meet every
+Let's build a parser for a small configuration format from scratch: text in, a
+tree of objects out.
+
+```
+// A small config
+name = "phplrt"
+version = 4
+debug = true
+```
+
+```php
+[
+    Property { name: "name",    value: Literal { value: "phplrt" } },
+    Property { name: "version", value: Literal { value: 4 } },
+    Property { name: "debug",   value: Literal { value: true } },
+]
+```
+
+It takes about forty lines of grammar, and along the way you will meet every
 part of phplrt you are likely to need.
 
 ```bash
@@ -16,14 +33,13 @@ Before anything can be parsed, the text has to be cut into pieces. Create
 
 ```pp3
 %skip  T_WHITESPACE  \s++
+%skip  T_COMMENT     //[^\n]*+
 
-%token T_NUMBER      \d++(?:\.\d++)?
-%token T_PLUS        \+
-%token T_MINUS       \-
-%token T_MUL         \*
-%token T_DIV         /
-%token T_PARENTHESIS_OPEN   \(
-%token T_PARENTHESIS_CLOSE  \)
+%token T_BOOLEAN  (?:true|false)\b
+%token T_NAME     [a-zA-Z_][a-zA-Z0-9_]*+
+%token T_STRING   "[^"]*+"
+%token T_NUMBER   \d++
+%token T_EQUAL    =
 ```
 
 Each line is a name and a regular expression. `%skip` is the same as `%token`,
@@ -31,155 +47,169 @@ except those tokens never reach the parser - which is exactly what you want
 for whitespace and comments.
 
 The order matters: the lexer tries the patterns from top to bottom and takes
-the first one that matches.
+the first one that matches. `T_BOOLEAN` is above `T_NAME` for that very
+reason - the other way round, `true` would be read as a name.
 
 ## Step 2: Describe The Sentences
 
 Now the rules. A rule has a name, a `:`, a body, and an optional `;`:
 
 ```pp3
-Number : <T_NUMBER> ;
+Property : <T_NAME> ::T_EQUAL:: Value() ;
 ```
 
-`<T_NUMBER>` means "read a `T_NUMBER` token and keep it". There is also
-`::T_NUMBER::`, which reads the token and throws it away - use it for
-punctuation you do not care about, like commas and brackets.
+Three things are going on in that line:
 
-Rules can refer to each other with `RuleName()`:
+- `<T_NAME>` reads a token **and keeps it**;
+- `::T_EQUAL::` reads a token and **throws it away** - the `=` has done its job
+  by being there, and nobody needs it afterwards;
+- `Value()` refers to another rule.
+
+`|` means "or". The alternatives are tried in order, and the first one that
+matches wins - so put the more specific ones first:
 
 ```pp3
-Primary
-  : ::T_PARENTHESIS_OPEN::
-      Expression()
-    ::T_PARENTHESIS_CLOSE::
+Value
+  : String()
   | Number()
+  | Boolean()
   ;
 ```
 
-`|` means "or". The alternatives are tried in order, and the first one that
-matches wins - so put the more specific ones first.
-
-To get operator precedence right, use the classic trick: multiplication binds
-tighter than addition, so addition is written *in terms of* multiplication.
+A config is a list of properties, so the rule the parsing starts at is a
+repetition:
 
 ```pp3
-Expression : Term()    ((<T_PLUS> | <T_MINUS>) Term())*    ;
-Term       : Primary() ((<T_MUL>  | <T_DIV>)   Primary())* ;
+%pragma root Config
+
+Config : Property()* ;
 ```
 
-`*` means "zero or more times". There is also `+` (one or more), `?`
-(optional) and `{2,5}` (between two and five times).
+`*` means "zero or more times", so an empty file is a valid config. There is
+also `+` (one or more), `?` (optional) and `{2,5}` (between two and five
+times). `%pragma root` names the rule everything else hangs off.
 
 ## Step 3: Say What To Build
 
-At this point the grammar is complete - it can already tell `2 + 2` from
-`2 +`. But parsing alone just gives you a pile of tokens. To get a *value*,
-attach a **reducer**: a block of PHP that runs when the rule matches.
+At this point the grammar is complete - it can already tell `name = 4` from
+`name =`. But recognizing text is not the same as getting something out of it.
+To build a value, attach a **reducer**: a block of PHP that runs when the rule
+matches.
+
+Start with the nodes. They are plain objects - no base class, nothing from
+phplrt in them:
+
+```php
+namespace App\Ast;
+
+final readonly class Property
+{
+    public function __construct(
+        public string $name,
+        public Literal $value,
+        public int $offset,
+    ) {}
+}
+
+final readonly class Literal
+{
+    public function __construct(
+        public mixed $value,
+        public int $offset,
+    ) {}
+}
+```
+
+Now the rules that build them:
 
 ```pp3
-Number -> { return (float) $children->value; }
+String -> { return new \App\Ast\Literal(\substr($children->value, 1, -1), $offset); }
+  : <T_STRING>
+  ;
+
+Number -> { return new \App\Ast\Literal((int) $children->value, $offset); }
   : <T_NUMBER>
   ;
-```
 
-Inside the block, `$children` holds whatever the rule matched. For `Number`
-that is a single token, so `$children->value` is the text `"42"` and the
-reducer turns it into `42.0`.
-
-For `Expression`, `$children` is a list: `[2.0, Token('+'), 3.0]`. Fold it
-left to right:
-
-```pp3
-Expression -> {
-    // A single operand: nothing to add up
-    if (!\is_array($children)) {
-        return $children;
-    }
-
-    $result = \array_shift($children);
-
-    while ($children !== []) {
-        $operator = \array_shift($children);
-        $right = \array_shift($children);
-
-        $result = $operator->value === '+' 
-            ? $result + $right 
-            : $result - $right;
-    }
-
-    return $result;
-}
-  : Term() ((<T_PLUS> | <T_MINUS>) Term())*
+Boolean -> { return new \App\Ast\Literal($children->value === 'true', $offset); }
+  : <T_BOOLEAN>
   ;
 ```
+
+Inside the block, `$children` holds whatever the rule matched. For `String`
+that is the one token it kept, so `$children->value` is the text `"phplrt"` -
+quotes included, which is what `substr()` takes off.
+
+`$offset` is where the token starts, in bytes. Keeping it on every node is a
+habit worth forming: it is what lets a later stage - a validator, a linter,
+your own error - point at the right place in the file.
+
+For a rule that matched several things, `$children` is a list:
+
+```pp3
+Property -> {
+    return new \App\Ast\Property(
+        name: $children[0]->value,
+        value: $children[1],
+        offset: $children[0]->offset,
+    );
+}
+  : <T_NAME> ::T_EQUAL:: Value()
+  ;
+```
+
+Two elements, not three: `::T_EQUAL::` was discarded by the grammar, so the
+reducer never sees it. And `$children[1]` is a `Literal` rather than a token,
+already built - reducers run bottom-up, innermost rule first.
+
+`Value` and `Config` get no reducer at all. A rule without one hands its
+children up as they are, which is exactly right here: `Value` is a choice
+between three rules that already build nodes, and `Config` is the list of
+properties itself.
 
 ## The Whole Grammar
 
 ```pp3
 %skip  T_WHITESPACE  \s++
+%skip  T_COMMENT     //[^\n]*+
 
-%token T_NUMBER      \d++(?:\.\d++)?
-%token T_PLUS        \+
-%token T_MINUS       \-
-%token T_MUL         \*
-%token T_DIV         /
-%token T_PARENTHESIS_OPEN   \(
-%token T_PARENTHESIS_CLOSE  \)
+%token T_BOOLEAN  (?:true|false)\b
+%token T_NAME     [a-zA-Z_][a-zA-Z0-9_]*+
+%token T_STRING   "[^"]*+"
+%token T_NUMBER   \d++
+%token T_EQUAL    =
 
 // Where the parsing starts
-%pragma root Expression
+%pragma root Config
 
-Expression -> {
-    if (!\is_array($children)) {
-        return $children;
-    }
+Config : Property()* ;
 
-    $result = \array_shift($children);
-
-    while ($children !== []) {
-        $operator = \array_shift($children);
-        $right = \array_shift($children);
-
-        $result = $operator->value === '+' 
-            ? $result + $right 
-            : $result - $right;
-    }
-
-    return $result;
+Property -> {
+    return new \App\Ast\Property(
+        name: $children[0]->value,
+        value: $children[1],
+        offset: $children[0]->offset,
+    );
 }
-  : Term() ((<T_PLUS> | <T_MINUS>) Term())*
+  : <T_NAME> ::T_EQUAL:: Value()
   ;
 
-Term -> {
-    if (!\is_array($children)) {
-        return $children;
-    }
-
-    $result = \array_shift($children);
-
-    while ($children !== []) {
-        $operator = \array_shift($children);
-        $right = \array_shift($children);
-
-        $result = $operator->value === '*' 
-            ? $result * $right 
-            : $result / $right;
-    }
-
-    return $result;
-}
-  : Primary() ((<T_MUL> | <T_DIV>) Primary())*
-  ;
-
-Primary
-  : ::T_PARENTHESIS_OPEN::
-      Expression()
-    ::T_PARENTHESIS_CLOSE::
+Value
+  : String()
   | Number()
+  | Boolean()
   ;
 
-Number -> { return (float) $children->value; }
+String -> { return new \App\Ast\Literal(\substr($children->value, 1, -1), $offset); }
+  : <T_STRING>
+  ;
+
+Number -> { return new \App\Ast\Literal((int) $children->value, $offset); }
   : <T_NUMBER>
+  ;
+
+Boolean -> { return new \App\Ast\Literal($children->value === 'true', $offset); }
+  : <T_BOOLEAN>
   ;
 ```
 
@@ -194,10 +224,23 @@ $parser = new Compiler()
     ->load(new File(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-echo $parser->parse(new Source('2 + 2'));       // 4
-echo $parser->parse(new Source('2 + 2 * 2'));   // 6
-echo $parser->parse(new Source('(2 + 2) * 2')); // 8
-echo $parser->parse(new Source('10 / 4'));      // 2.5
+$ast = $parser->parse(new Source(<<<'CONF'
+    // A small config
+    name = "phplrt"
+    version = 4
+    debug = true
+    CONF));
+```
+
+```php
+$ast[0]->name;         // "name"
+$ast[0]->value->value; // "phplrt"
+$ast[0]->offset;       // 18
+
+$ast[1]->value->value; // 4    - an int, because the reducer cast it
+$ast[2]->value->value; // true - a bool, same
+
+$parser->parse(new Source('')); // [] - an empty config is still a config
 ```
 
 Notice the two kinds of "source": `File` reads from disk, `Source` wraps a
@@ -213,17 +256,21 @@ happened:
 use Phplrt\Source\VirtualFile;
 
 // VirtualFile is a string that also has a name, so errors can point at it
-$parser->parse(new VirtualFile('expr.txt', "1 + 2\n3 * (4 + )\n"));
+$parser->parse(new VirtualFile('config.txt', <<<'CONF'
+    name = "phplrt"
+    version = = 4
+    debug = true
+    CONF));
 ```
 
 ```
-error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER)
- --> expr.txt:2:1
+error[UnexpectedTokenException]: Syntax error, unexpected "=" (T_EQUAL)
+ --> config.txt:2:11
   |
-1 | 1 + 2
-2 | 3 * (4 + )
-  | ^
-3 |
+1 | name = "phplrt"
+2 | version = = 4
+  |           ^
+3 | debug = true
 ```
 
 If you only want to know whether the input is valid, without building
@@ -233,8 +280,8 @@ anything, use `analyze()`:
 use Phplrt\Parser\Analysis\Mode;
 use Phplrt\Parser\Analysis\Result\SuccessfulResult;
 
-$parser->analyze(new Source('2 + 2'), Mode::SyntaxCheck) instanceof SuccessfulResult; // true
-$parser->analyze(new Source('2 +'), Mode::SyntaxCheck) instanceof SuccessfulResult;   // false
+$parser->analyze(new Source('name = "x"'), Mode::SyntaxCheck) instanceof SuccessfulResult; // true
+$parser->analyze(new Source('name ='), Mode::SyntaxCheck) instanceof SuccessfulResult;     // false
 ```
 
 It also tells you *how much* of the input is valid and what stands in the way,
@@ -253,35 +300,47 @@ use Phplrt\Source\File;
 new Compiler()
     ->load(new File(__DIR__ . '/grammar.pp3'))
     ->generate()
-        ->withNamespaceName('App\Calculator')
-        ->withClassName('CalculatorParser')
-        ->save(__DIR__ . '/CalculatorParser.php');
+        ->withNamespaceName('App\Config')
+        ->withClassName('CompiledConfigParser')
+        ->save(__DIR__ . '/CompiledConfigParser.php');
 ```
 
-You get an ordinary class:
+You get an ordinary class, with the tokens as constants and every reducer as a
+real method:
 
 ```php
-namespace App\Calculator;
+namespace App\Config;
 
-readonly class CalculatorParser extends \Phplrt\Parser\Parser
+readonly class CompiledConfigParser extends \Phplrt\Parser\Parser
 {
     public const int T_WHITESPACE = 0;
-    public const int T_NUMBER = 1;
+    public const int T_COMMENT = 1;
+    public const int T_BOOLEAN = 2;
     // ...
 
     public function __construct()
     {
         parent::__construct(/* the whole grammar, inlined */);
     }
+
+    private static function reduceString(\Phplrt\Parser\Context $ctx, mixed $children): mixed
+    {
+        // The variables below are declared by the compiler
+        $offset = $ctx->token->offset;
+
+        return new \App\Ast\Literal(\substr($children->value, 1, -1), $offset);
+    }
+
+    // ...
 }
 ```
 
 Which you use like any other class - no compiler, no grammar file:
 
 ```php
-$parser = new App\Calculator\CalculatorParser();
+$parser = new App\Config\CompiledConfigParser();
 
-echo $parser->parse(new Source('2 + 2 * 2')); // 6
+$parser->parse(new Source('debug = true'))[0]->name; // "debug"
 ```
 
 Add the generation call to your build script or a console command, and you
@@ -289,58 +348,68 @@ are done.
 
 ## Step 7: Give The Parser Something To Work With
 
-So far the calculator only knows what is written in the expression. Real
-languages need more: a variable scope, a function registry, a logger, a cache.
+So far the config can only say what is written in it. Real formats reach
+outside: environment variables, includes, a base directory, a registry of
+keys that are allowed at all.
 
 The generated parser is an ordinary class, so **extend it** - and the grammar
 can reach whatever you add, through `$this`.
 
-Add a rule for variables:
+Add references to the grammar:
 
 ```pp3
-%token T_NAME  [a-z_][a-z0-9_]*+
+%token T_REFERENCE  \$\{([a-zA-Z_][a-zA-Z0-9_]*+)\}
 
-Operand
-  : Number()
-  | Variable()
+Value
+  : String()
+  | Number()
+  | Boolean()
+  | Reference()
   ;
 
 // $this is the parser itself, so the value comes from the subclass
-Variable -> { return $this->resolve($children->value, $children->offset, $source); }
-  : <T_NAME>
+Reference -> { return $this->reference($children->captures[0], $offset, $source); }
+  : <T_REFERENCE>
   ;
 ```
 
-Regenerate, and notice what the compiler did with it:
+The pattern has a capturing group, and `$children->captures[0]` is what that
+group matched - the name alone, without the `${}` around it. More on captures
+in [Tokens and Channels](/docs/lexer/tokens).
+
+Regenerate, and notice what the compiler did with the new rule:
 
 ```php
-private static function reduceNumber(\Phplrt\Parser\Context $ctx, mixed $children): mixed
+private function reduceReference(\Phplrt\Parser\Context $ctx, mixed $children): mixed
 {
-    return (int) $children->value;
-}
-
-private function reduceVariable(\Phplrt\Parser\Context $ctx, mixed $children): mixed
-{
+    // The variables below are declared by the compiler
     $source = $ctx->source;
+    $offset = $ctx->token->offset;
 
-    return $this->resolve($children->value, $children->offset, $source);
+    return $this->reference($children->captures[0], $offset, $source);
 }
 ```
 
 A reducer that mentions `$this` becomes a **non-static** method, and the
-grammar table refers to it as `$this->reduceVariable(...)` instead of
-`self::reduceNumber(...)`. The compiler works this out per reducer, so you do
+grammar table refers to it as `$this->reduceReference(...)` instead of
+`self::reduceString(...)`. The compiler works this out per reducer, so you do
 not configure anything.
 
-Now subclass and fill in `resolve()`:
+Now subclass and fill in `reference()`:
 
 ```php
-use Phplrt\Contracts\Source\ReadableInterface;
+namespace App\Config;
 
-readonly class Calculator extends App\Calculator\CalculatorParser
+use App\Ast\Literal;
+use Phplrt\Contracts\Source\ReadableInterface;
+use Phplrt\Exception\ErrorPrinter;
+
+final class UnknownVariableException extends \InvalidArgumentException {}
+
+final readonly class ConfigParser extends CompiledConfigParser
 {
     /**
-     * @param array<non-empty-string, int> $variables
+     * @param array<non-empty-string, string> $variables
      */
     public function __construct(
         private array $variables = [],
@@ -348,74 +417,56 @@ readonly class Calculator extends App\Calculator\CalculatorParser
         parent::__construct();
     }
 
-    protected function resolve(string $name, int $offset, ReadableInterface $source): int
+    protected function reference(string $name, int $offset, ReadableInterface $source): Literal
     {
-        return $this->variables[$name]
-            ?? throw new UnknownVariableException(
-                \sprintf('Unknown variable "%s"', $name),
-                $source,
-                $offset,
-            );
+        if (!isset($this->variables[$name])) {
+            throw new UnknownVariableException((string) new ErrorPrinter()
+                ->print($source, $offset, \strlen($name) + 3)
+                ->withMessage(\sprintf('Unknown variable "%s"', $name))
+                ->withClass('UnknownVariableException'));
+        }
+
+        return new Literal($this->variables[$name], $offset);
     }
 }
 ```
 
 ```php
-$parser = new Calculator(['x' => 10, 'y' => 32]);
+$parser = new ConfigParser(['APP_ENV' => 'prod']);
 
-echo $parser->parse(new Source('x + y'));     // 42
-echo $parser->parse(new Source('x + 1 + y')); // 43
+$parser->parse(new Source('env = ${APP_ENV}'))[0]
+    ->value->value; // "prod"
 ```
 
-The grammar stays a description of the *language*; anything that depends on
-context lives in PHP, where it belongs. Each instance carries its own data, so
-two calculators with different variables are two objects.
+The grammar stays a description of the *language*: `${...}` is a reference in
+this format whatever your variables happen to be. What a reference resolves
+to is a decision, and decisions live in PHP. Each instance carries its own
+data, so two parsers with different variables are two objects.
 
-And because `resolve()` gets the offset and the source, an error from your
-code looks exactly like an error from the parser:
+And because the reducer handed `reference()` the offset and the source, an
+error from your code reads exactly like one from the parser:
 
 ```
-error[UnknownVariableException]: Unknown variable "zzz"
- --> expr.txt:1:5
+error[UnknownVariableException]: Unknown variable "NOPE"
+ --> config.txt:2:7
   |
-1 | x + zzz
-  |     ^
+1 | name = "phplrt"
+2 | env = ${NOPE}
+  |       ^^^^^^^
+3 |
 ```
 
-Three things to keep in mind:
-
-- **The generated class is `readonly`**, so a subclass must be `readonly` too,
-  and its own constructor must call `parent::__construct()`.
-- **`$this` reducers only work in a generated parser.** Loading the grammar
-  with `getParser()` compiles reducers into plain closures with nothing to
-  bind to, and the rule throws `Error: Using $this when not in object context`
-  the first time it is reduced. Keep `$this` out of grammars you intend to
-  read on the fly.
-- **The method you call does not exist on the generated class.** It resolves
-  at runtime against the subclass, which works, but analysing the generated
-  file on its own reports it:
-
-  ```
-  Call to an undefined method Calc\CompiledCalculator::resolve().
-  ```
-
-  Reducer bodies are typed `mixed` anyway, so a generated parser rarely passes
-  a strict analysis on its own merits. Exclude it:
-
-  ```json
-  parameters:
-      excludePaths:
-          - src/Parser/*Parser.php
-  ```
-
-  The reducers themselves are still checked - as part of the grammar, in code
-  review - and the subclass, where your logic actually lives, is analysed
-  normally.
+`ErrorPrinter` renders any offset in any source - see
+[Error Reporting](/docs/errors). Subclassing has a few rules of its own, and
+they are collected in [Best Practices](/docs/guide/best-practice).
 
 ## Where To Go Next
 
 - [Grammar Syntax](/docs/compiler/grammar) - the full `.pp3` reference.
-- [Reducers](/docs/compiler/code) - building a real AST instead of numbers.
+- [PHP in a Grammar](/docs/compiler/code) - reducers, the variables they see
+  and what `$children` holds.
 - [Lexer](/docs/lexer) - channels, captures and nested lexers.
 - [Code Generation](/docs/compiler/generation) - namespaces, imports, and
   what the generated file looks like.
+- [Best Practices](/docs/guide/best-practice) - what to do with the parser
+  once it works.

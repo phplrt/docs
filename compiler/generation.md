@@ -93,8 +93,7 @@ readonly class SumParser extends \Phplrt\Parser\Parser
                 0 => self::reduceSum(...),
                 1 => self::reduceNumber(...),
             ],
-            startTokens: [ /* the lookahead table */ ],
-            matchesEmptyInput: [ /* ... */ ],
+            lookahead: [ /* ... */ ],
             presentInTree: [ /* ... */ ],
         );
     }
@@ -130,9 +129,9 @@ static analysis like any other file.
 runtime; PCRE does the work in a single pass and `(*MARK:n)` says which
 token won.
 
-**The lookahead tables are baked in.** These are what make the parser quick:
-before entering a rule, it checks whether the current token could possibly
-start it, which is one array lookup instead of a doomed descent.
+**The analysis is baked in.** Whatever the compiler could work out about the
+grammar ahead of time is written out as a table, so the parser reads the answer
+instead of arriving at it again on every rule.
 
 ## Shaping The Output
 
@@ -392,8 +391,7 @@ $result->parser->grammar;    // list<RuleInterface> - the rules, by id
 $result->parser->initial;    // where parsing starts
 $result->parser->reducers;   // array<int, ReducerInterface>
 $result->parser->constants;  // ['Sum' => 0, ...] - named rules
-$result->parser->startTokens;      // the lookahead table
-$result->parser->matchesEmptyInput;
+$result->parser->lookahead;
 $result->parser->presentInTree;
 ```
 

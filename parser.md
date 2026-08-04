@@ -84,8 +84,9 @@ $parser = new Parser(
 echo $parser->parse(new Source('1 + 2 + 3')); // 6
 ```
 
-This is exactly what the compiler generates for you - it just also computes
-the lookahead tables, which make it considerably faster.
+This is exactly what the compiler generates for you - it just also works out
+what can be told about the grammar ahead of time, which makes it considerably
+faster.
 
 The rule classes are described in [Grammar Rules](/docs/parser/rules), and
 the friendlier way to produce this array is

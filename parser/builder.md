@@ -193,10 +193,10 @@ joined, duplicate rules are merged, repeated alternatives are dropped. A
 real-world grammar typically loses a few percent of its rules this way, and
 parses a little faster for it.
 
-Finally it computes the **lookahead tables**: for every rule, the set of
-tokens it can possibly start with. At parse time this turns "try this rule and
-see" into a single array lookup, which is most of the reason the parser is
-quick.
+Finally, it **analyses** the grammar it ended up with. Nothing is rewritten at
+this point: the passes only work out what can be told about the rules ahead of
+time, and the parser reads the answers instead of asking the same questions
+over and over. This is most of the reason it is quick.
 
 ## Adding Your Own Passes
 
@@ -227,7 +227,7 @@ $grammar->removeCompilerPass(NestedConcatenationParserCompilerPass::class);
 ```
 
 There are analysis passes too - they do not change the grammar, they describe
-it (this is where the lookahead tables come from):
+it:
 
 ```php
 $grammar->addAnalysisPass(new MyMetadataPass());
@@ -254,7 +254,7 @@ $result->grammar;    // list<RuleInterface>
 $result->initial;    // int
 $result->reducers;   // array<int, ReducerInterface>
 $result->constants;  // ['Sum' => 0, 'Number' => 1]
-$result->startTokens; // the lookahead table
+$result->lookahead;  // what the analysis found out
 
 $parser = $result->toParser($compiledLexer->toLexer());
 ```
