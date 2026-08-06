@@ -290,7 +290,10 @@ new Source('2 + 2');
 new VirtualFile('x.txt', '2 + 2'); // a string with a name
 ```
 
-`SourceFactory` is there if you need the "figure out what this is" behaviour.
+`SourceFactory::createDefault()` is there if you need the "figure out what this
+is" behaviour. Note that it now has a single `create()` method: the
+`createFromString()`, `createFromFile()` and `createFromStream()` helpers are
+gone, and each kind of source is a driver behind that one method instead.
 
 ### Code Generation Is Back
 

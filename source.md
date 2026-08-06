@@ -99,22 +99,73 @@ If you do not know in advance what you are given, let the factory decide:
 ```php
 use Phplrt\Source\SourceFactory;
 
-$factory = new SourceFactory();
+$factory = SourceFactory::createDefault();
 
 $factory->create('2 + 2');                        // Source
 $factory->create(new \SplFileInfo('/app/x.txt')); // File
 $factory->create(\fopen('php://memory', 'rb+'));  // Stream
+$factory->create(new Source('2 + 2'));            // the very same object back
 ```
 
-There are explicit methods too, when you do want to be specific:
+A string is always the source code itself, never a pathname: there is no way
+to tell one from the other, so a file is referenced by an `SplFileInfo`.
+
+When you do want to be specific, construct the source yourself - that is what
+the constructors are for, and it is the only way to reach the named kinds:
 
 ```php
-$factory->createFromFile('/app/x.txt');
-$factory->createFromString('2 + 2');
-$factory->createFromString('2 + 2', 'virtual.txt'); // VirtualFile
-$factory->createFromStream($resource);
-$factory->createEmpty();
+new File('/app/x.txt');
+new Source('2 + 2');
+new VirtualFile('virtual.txt', '2 + 2');
+new Stream($resource);
 ```
+
+### Drivers
+
+The factory itself knows nothing about the kinds of source; each of them is a
+driver, and `create()` hands the argument to every driver in turn until one of
+them recognizes it. `SourceFactory::createDefault()` is simply this list:
+
+```php
+use Phplrt\Source\Driver;
+use Phplrt\Source\SourceFactory;
+
+new SourceFactory([
+    new Driver\StringSourceDriver(),      // string       -> Source
+    new Driver\SplFileInfoSourceDriver(), // \SplFileInfo -> File
+    new Driver\StreamSourceDriver(),      // resource     -> Stream
+]);
+```
+
+An argument that already is a source is returned as it is, whatever the
+drivers are - so `create()` is safe to call on a value that may or may not
+have been converted yet.
+
+The first driver that recognizes the argument wins, so prepending your own is
+how you override a built-in one. A driver returns `null` for what it does not
+recognize, and throws for what it recognizes but cannot turn into a source:
+
+```php
+use Phplrt\Contracts\Source\ReadableInterface;
+use Phplrt\Source\Driver\SourceDriverInterface;
+use Phplrt\Source\Stream;
+use Psr\Http\Message\StreamInterface;
+
+final class PsrStreamSourceDriver implements SourceDriverInterface
+{
+    public function tryCreate(mixed $source): ?ReadableInterface
+    {
+        if (!$source instanceof StreamInterface) {
+            return null;
+        }
+
+        return new Stream($source->detach());
+    }
+}
+```
+
+When no driver recognizes the argument, `create()` throws a
+`NotCreatableException`.
 
 ## The Interfaces
 

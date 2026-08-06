@@ -294,7 +294,7 @@ final readonly class JsonParser extends CompiledJsonParser
 
     public function __construct()
     {
-        $this->sources = new SourceFactory();
+        $this->sources = SourceFactory::createDefault();
 
         parent::__construct();
     }
@@ -303,7 +303,7 @@ final readonly class JsonParser extends CompiledJsonParser
     public function parse(mixed $source): JsonValue
     {
         // The factory builds a source out of something that is not one yet
-        // and rejects what already is, so a readable source is passed through
+        // and passes through what already is one
         $readable = $this->sources->create($source);
     
         return parent::parse($readable);
