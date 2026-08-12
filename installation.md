@@ -35,21 +35,15 @@ composer require phplrt/compiler --dev
 
 Here is the full list:
 
-| Package                  | What it does                                                          |
-|--------------------------|-----------------------------------------------------------------------|
-| `phplrt/source`          | Reads source code from files, strings and streams                     |
-| `phplrt/lexer`           | Splits source code into tokens                                        |
-| `phplrt/parser`          | Recognizes tokens against a grammar and builds a result               |
-| `phplrt/exception`       | Renders errors with a snippet of the code around them                 |
-| `phplrt/lexer-builder`   | Describes a lexer in PHP and compiles it                              |
-| `phplrt/parser-builder`  | Describes a grammar in PHP and compiles it                            |
-| `phplrt/compiler`        | Reads `*.pp2` or `*.pp3` grammar files and generates PHP code |
-
-And the contracts, if you only want to type-hint against interfaces:
-
-```bash
-composer require phplrt/lexer-contracts phplrt/parser-contracts phplrt/source-contracts
-```
+| Package                  | What it does                                                    |
+|--------------------------|-----------------------------------------------------------------|
+| `phplrt/source`          | Reads source code from files, strings and streams               |
+| `phplrt/lexer`           | Splits source code into tokens                                  |
+| `phplrt/parser`          | Recognizes tokens against a grammar and builds a result         |
+| `phplrt/exception`       | Renders errors with a snippet of the code around them           |
+| `phplrt/lexer-builder`   | Describes a lexer in PHP and compiles it                        |
+| `phplrt/parser-builder`  | Describes a grammar in PHP and compiles it                      |
+| `phplrt/compiler`        | Reads `*.pp2` or `*.pp3` grammar files and generates PHP code   |
 
 ## Autoloading
 
