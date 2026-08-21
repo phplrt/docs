@@ -23,10 +23,11 @@ exception renders like this when converted to a string.
 
 ```php
 use Phplrt\Parser\Exception\UnexpectedTokenException;
-use Phplrt\Source\VirtualStringSource;
+use Phplrt\Source\StringSource;
+use Phplrt\Source\VirtualSource;
 
 try {
-    $parser->parse(new VirtualStringSource('expr.txt', $input));
+    $parser->parse(VirtualSource::createFromString('expr.txt', $input));
 } catch (UnexpectedTokenException $e) {
     echo $e->getMessage(); // Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
     echo $e;               // ...plus the snippet above
@@ -48,7 +49,7 @@ This is the one thing you have to do yourself. A bare `StringSource` has no
 name, so an error can only show the snippet:
 
 ```php
-$parser->parse(new StringSource($input));
+$parser->parse(StringSource::createFromString($input));
 ```
 
 ```
@@ -58,18 +59,18 @@ error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER), T_PLUS
   | ^
 ```
 
-Wrap the input in a `FileSource` or a `VirtualStringSource` and the error can
+Wrap the input in a `FileSource` or a `VirtualSource` and the error can
 say *where*:
 
 ```php
-$parser->parse(new VirtualStringSource('user-input.txt', $input));
+$parser->parse(VirtualSource::createFromString('user-input.txt', $input));
 ```
 
 ```
  --> user-input.txt:2:1
 ```
 
-`VirtualStringSource` costs nothing - it is a string with a name attached - so
+`VirtualSource` costs nothing - it is a string with a name attached - so
 use it even when the input never touched the disk.
 
 ## Catching Everything
@@ -112,9 +113,10 @@ treatment. `ErrorPrinter` renders any offset in any source:
 
 ```php
 use Phplrt\Exception\ErrorPrinter;
-use Phplrt\Source\VirtualStringSource;
+use Phplrt\Source\StringSource;
+use Phplrt\Source\VirtualSource;
 
-$source = new VirtualStringSource('config.txt', <<<'TXT'
+$source = VirtualSource::createFromString('config.txt', <<<'TXT'
     name = "phplrt"
     version = four
     debug = true

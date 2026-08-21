@@ -235,10 +235,10 @@ use Phplrt\Source\FileSource;
 use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$pattern = $parser->parse(new StringSource('(?<year>[0-9]{4})-[0-9]{2}'));
+$pattern = $parser->parse(StringSource::createFromString('(?<year>[0-9]{4})-[0-9]{2}'));
 ```
 
 The pattern is read without the delimiters and the modifiers around it, so

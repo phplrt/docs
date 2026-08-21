@@ -12,7 +12,7 @@ use Phplrt\Compiler\Compiler;
 use Phplrt\Source\FileSource;
 
 new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->generate()
         ->withNamespaceName('App\Calculator')
         ->withClassName('SumParser')
@@ -22,7 +22,7 @@ new Compiler()
 ```php
 $parser = new App\Calculator\SumParser();
 
-echo $parser->parse(new StringSource('2 + 2')); // 4
+echo $parser->parse(StringSource::createFromString('2 + 2')); // 4
 ```
 
 That is it. The generated file needs `phplrt/lexer` and `phplrt/parser`, and
@@ -142,7 +142,7 @@ order does not matter:
 
 ```php
 new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->generate()
         ->withNamespaceName('App\Parser')                  // namespace App\Parser;
         ->withClassImport('App\Ast\NumberNode')            // use App\Ast\NumberNode;
@@ -186,7 +186,7 @@ The output is `Stringable`, so you can do what you like with it:
 
 ```php
 $code = (string) new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->generate()
         ->withNamespaceName('App\Parser')
         ->withClassName('LanguageParser');
@@ -244,7 +244,7 @@ Generation is not always the answer. Read the grammar at runtime when:
 ```php
 // Perfectly reasonable for a CLI tool
 $parser = new Compiler()
-    ->load(new FileSource($argv[1]))
+    ->load(FileSource::createFromPathname($argv[1]))
     ->getParser();
 ```
 
@@ -318,7 +318,7 @@ Pass it to `generate()` in place of the default:
 
 ```php
 new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->generate(new TokenListGenerator())
         ->withClassName('Calculator')
         ->save(__DIR__ . '/calculator.json');

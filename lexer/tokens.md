@@ -4,7 +4,7 @@ A token is the smallest thing a lexer produces. It is immutable, and it
 carries five pieces of information.
 
 ```php
-foreach ($lexer->lex(new StringSource('23 + 42')) as $token) {
+foreach ($lexer->lex(StringSource::createFromString('23 + 42')) as $token) {
     $token->id;      // 0       - which definition matched
     $token->name;    // T_DIGIT - its human-readable name, or null
     $token->value;   // "23"    - the exact text that matched
@@ -110,7 +110,7 @@ $builder->addPattern('\d++', 'T_DIGIT');
 $builder->addPattern('//[^\n]*+', 'T_COMMENT')->setChannel('comments');
 $builder->addPattern('\s++')->hide();
 
-foreach ($lexer->lex(new StringSource("1 // hi\n2")) as $token) {
+foreach ($lexer->lex(StringSource::createFromString("1 // hi\n2")) as $token) {
     echo $token->name, ' on ', $token->channel->name, "\n";
 }
 ```

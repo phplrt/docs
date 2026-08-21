@@ -285,9 +285,9 @@ File::fromPathname('/app/x.txt');
 File::fromSources('2 + 2');
 
 // 4.x
-new FileSource('/app/x.txt');
-new StringSource('2 + 2');
-new VirtualStringSource('x.txt', '2 + 2'); // a string with a name
+FileSource::createFromPathname('/app/x.txt');
+StringSource::createFromString('2 + 2');
+VirtualSource::createFromString('x.txt', '2 + 2'); // a string with a name
 ```
 
 `SourceFactory::createDefault()` is there if you need the "figure out what this
@@ -305,7 +305,7 @@ the reducers as real methods:
 
 ```php
 new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->generate()
         ->withNamespaceName('App\Parser')
         ->withClassName('LanguageParser')

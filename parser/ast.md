@@ -14,7 +14,7 @@ Sum : <T_DIGIT> (::T_PLUS:: <T_DIGIT>)* ;
 ```
 
 ```php
-$parser->parse(new StringSource('2 + 3'));
+$parser->parse(StringSource::createFromString('2 + 3'));
 // [Token("2"), Token("3")]
 ```
 

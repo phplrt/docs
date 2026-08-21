@@ -11,8 +11,8 @@ at it.
 use Phplrt\Source\FileSource;
 use Phplrt\Source\StringSource;
 
-$fromDisk   = new FileSource(__DIR__ . '/example.txt');
-$fromString = new StringSource('2 + 2');
+$fromDisk   = FileSource::createFromPathname(__DIR__ . '/example.txt');
+$fromString = StringSource::createFromString('2 + 2');
 
 echo $fromString->content; // "2 + 2"
 ```
@@ -39,13 +39,12 @@ Every source is named after what it reads: a `*Source` class in
 `Phplrt\Source` is a source, and a `*Stream` class in `Phplrt\Source\Stream`
 is the cursor one of them hands out.
 
-| Class                    | Reads                              |
-|--------------------------|------------------------------------|
-| `StringSource`           | a string in memory                 |
-| `FileSource`             | a real file on disk                |
-| `ResourceSource`         | an open resource                   |
-| `VirtualStringSource`    | a string, under a pathname         |
-| `VirtualResourceSource`  | an open resource, under a pathname |
+| Class               | Reads                              |
+|---------------------|------------------------------------|
+| `StringSource`      | a string in memory                 |
+| `FileSource`        | a real file on disk                |
+| `ResourceSource`    | an open resource                   |
+| `VirtualSource` | another source, under a pathname   |
 
 ### FileSource
 
@@ -54,7 +53,7 @@ A real file on disk.
 ```php
 use Phplrt\Source\FileSource;
 
-$source = new FileSource(__DIR__ . '/grammar.pp3');
+$source = FileSource::createFromPathname(__DIR__ . '/grammar.pp3');
 
 echo $source->pathname;   // "/app/grammar.pp3"
 echo $source->content;    // the contents of the file
@@ -73,22 +72,37 @@ A string you already have in memory.
 ```php
 use Phplrt\Source\StringSource;
 
-$source = new StringSource('2 + 2');
+$source = StringSource::createFromString('2 + 2');
 ```
 
-### VirtualStringSource
+### VirtualSource
 
-A string that pretends to be a file. Nothing is read from disk, but errors
-can still point at a name - handy for code that came from a database, an
-HTTP request, or a test.
+Any other source, pretending to be a file. Nothing is read from disk, but
+errors can still point at a name - handy for code that came from a database,
+an HTTP request, or a test.
 
 ```php
-use Phplrt\Source\VirtualStringSource;
+use Phplrt\Source\StringSource;
+use Phplrt\Source\VirtualSource;
 
-$source = new VirtualStringSource('user-input.txt', '2 + 2');
+$source = VirtualSource::createFromString('user-input.txt', '2 + 2');
 
 echo $source->pathname; // "user-input.txt"
 echo $source->content;  // "2 + 2"
+```
+
+The pathname is the only thing it adds - everything read comes from the source
+it wraps, whatever kind that is. A name over a resource is the same class:
+
+```php
+$named = VirtualSource::createFromResourceStream('request.json', \fopen('php://input', 'rb'));
+```
+
+There is one for a real file as well, which is how a grammar read from disk
+gets reported under the name it was included as:
+
+```php
+$named = VirtualSource::createFromPathname('/app/grammar.pp3');
 ```
 
 ### ResourceSource
@@ -97,12 +111,8 @@ An open resource.
 
 ```php
 use Phplrt\Source\ResourceSource;
-use Phplrt\Source\VirtualResourceSource;
 
-$source = new ResourceSource(\fopen('php://input', 'rb'));
-
-// ...or with a name attached
-$named = new VirtualResourceSource('request.json', \fopen('php://input', 'rb'));
+$source = ResourceSource::createFromResource(\fopen('php://input', 'rb'));
 
 echo $source->isSeekable; // whether the resource can be rewound
 echo $source->uri;        // "php://input", or null for a resource without one
@@ -124,7 +134,7 @@ $factory = SourceFactory::createDefault();
 $factory->create('2 + 2');                        // StringSource
 $factory->create(new \SplFileInfo('/app/x.txt')); // FileSource
 $factory->create(\fopen('php://memory', 'rb+'));  // ResourceSource
-$factory->create(new StringSource('2 + 2'));      // the very same object back
+$factory->create(StringSource::createFromString('2 + 2'));      // the very same object back
 ```
 
 A string is always the source code itself, never a pathname: there is no way
@@ -134,10 +144,10 @@ When you do want to be specific, construct the source yourself - that is what
 the constructors are for, and it is the only way to reach the named kinds:
 
 ```php
-new FileSource('/app/x.txt');
-new StringSource('2 + 2');
-new VirtualStringSource('virtual.txt', '2 + 2');
-new ResourceSource($resource);
+FileSource::createFromPathname('/app/x.txt');
+StringSource::createFromString('2 + 2');
+VirtualSource::createFromString('virtual.txt', '2 + 2');
+ResourceSource::createFromResource($resource);
 ```
 
 ### Drivers
@@ -179,7 +189,7 @@ final class PsrStreamSourceDriver implements SourceDriverInterface
             return null;
         }
 
-        return new ResourceSource($source->detach());
+        return ResourceSource::createFromResource($source->detach());
     }
 }
 ```
@@ -198,7 +208,7 @@ use Phplrt\Contracts\Source\ReadableInterface;
 // Anything readable: FileSource, StringSource, ResourceSource...
 function parse(ReadableInterface $source): mixed { /* ... */ }
 
-// Only the ones that have a name: FileSource, VirtualStringSource...
+// Only the ones that have a name: FileSource, VirtualSource...
 function report(FileInterface $source): string
 {
     return $source->pathname;
@@ -225,7 +235,7 @@ use Phplrt\Contracts\Source\Exception\SourceExceptionInterface;
 use Phplrt\Source\FileSource;
 
 try {
-    echo new FileSource('/no/such/file')
+    echo FileSource::createFromPathname('/no/such/file')
         ->content;
 } catch (SourceExceptionInterface $e) {
     echo $e->getMessage(); // File "/no/such/file" not found
@@ -259,7 +269,7 @@ every call hands you a fresh one, so reading the source a second time means
 calling it again.
 
 ```php
-$file = new FileSource('/app/x.txt');
+$file = FileSource::createFromPathname('/app/x.txt');
 $file->createStream()->read(1024); // reads the file
 $file->createStream()->read(1024); // opens it again, reads it again
 ```
@@ -286,7 +296,7 @@ which is why the check is needed at all. `StringSource` narrows the return
 type, so a source you constructed yourself needs no check:
 
 ```php
-new StringSource('2 + 2')->createStream(); // StringStream, always seekable
+StringSource::createFromString('2 + 2')->createStream(); // StringStream, always seekable
 ```
 
 A source over a resource you cannot rewind is readable **once**: its cursors
@@ -294,7 +304,7 @@ share the position of the resource itself, so a second `createStream()` (or a
 `$content` read after one) throws instead of quietly handing you what is left.
 
 ```php
-$input = new ResourceSource(\fopen('php://input', 'rb'));
+$input = ResourceSource::createFromResource(\fopen('php://input', 'rb'));
 
 $input->createStream()->read(1024); // reads the input
 $input->createStream();             // NotReadableException
@@ -307,7 +317,7 @@ opened it is the one to close it. Pass `autoclose: true` when you would rather
 hand that duty over:
 
 ```php
-$owned = new ResourceSource(\fopen('/app/x.txt', 'rb'), autoclose: true);
+$owned = ResourceSource::createFromResource(\fopen('/app/x.txt', 'rb'), autoclose: true);
 
 unset($owned); // the file is closed here
 ```

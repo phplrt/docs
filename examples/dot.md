@@ -161,10 +161,10 @@ use Phplrt\Compiler\Compiler;
 use Phplrt\Source\FileSource;
 
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$graph = $parser->parse(new FileSource(__DIR__ . '/cluster.dot'));
+$graph = $parser->parse(FileSource::createFromPathname(__DIR__ . '/cluster.dot'));
 ```
 
 Three kinds of comment are thrown away by `%skip` - `//`, `#` and `/* ... */` -

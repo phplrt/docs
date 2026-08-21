@@ -115,11 +115,11 @@ use Phplrt\Source\FileSource;
 use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$parser->analyze(new StringSource('*/15 * * * *'), Mode::SyntaxCheck) instanceof SuccessfulResult; // true
-$parser->analyze(new StringSource('*/15 * *'), Mode::SyntaxCheck) instanceof SuccessfulResult;     // false
+$parser->analyze(StringSource::createFromString('*/15 * * * *'), Mode::SyntaxCheck) instanceof SuccessfulResult; // true
+$parser->analyze(StringSource::createFromString('*/15 * *'), Mode::SyntaxCheck) instanceof SuccessfulResult;     // false
 ```
 
 `Mode::SyntaxCheck` skips value building entirely, which is the cheapest way

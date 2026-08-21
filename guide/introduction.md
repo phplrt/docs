@@ -51,7 +51,7 @@ use Phplrt\Compiler\Compiler;
 use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new StringSource(<<<'PP3'
+    ->load(StringSource::createFromString(<<<'PP3'
         %token T_DIGIT       \d++
         %token T_PLUS        \+
         %skip  T_WHITESPACE  \s++
@@ -66,7 +66,7 @@ $parser = new Compiler()
         PP3))
     ->getParser();
 
-echo $parser->parse(new StringSource('2 + 3 + 4')); // 9
+echo $parser->parse(StringSource::createFromString('2 + 3 + 4')); // 9
 ```
 
 That is the whole library in miniature: `%token` describes the words,

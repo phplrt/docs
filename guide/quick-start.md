@@ -221,10 +221,10 @@ use Phplrt\Source\FileSource;
 use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$ast = $parser->parse(new StringSource(<<<'CONF'
+$ast = $parser->parse(StringSource::createFromString(<<<'CONF'
     // A small config
     name = "phplrt"
     version = 4
@@ -240,7 +240,7 @@ $ast[0]->offset;       // 18
 $ast[1]->value->value; // 4    - an int, because the reducer cast it
 $ast[2]->value->value; // true - a bool, same
 
-$parser->parse(new StringSource('')); // [] - an empty config is still a config
+$parser->parse(StringSource::createEmpty()); // [] - an empty config is still a config
 ```
 
 Notice the two kinds of "source": `FileSource` reads from disk and
@@ -253,10 +253,11 @@ Feed it something broken, and you get an exception that knows where it
 happened:
 
 ```php
-use Phplrt\Source\VirtualStringSource;
+use Phplrt\Source\StringSource;
+use Phplrt\Source\VirtualSource;
 
-// VirtualStringSource is a string with a name, so errors can point at it
-$parser->parse(new VirtualStringSource('config.txt', <<<'CONF'
+// VirtualSource attaches a name, so errors can point at it
+$parser->parse(VirtualSource::createFromString('config.txt', <<<'CONF'
     name = "phplrt"
     version = = 4
     debug = true
@@ -280,8 +281,8 @@ anything, use `analyze()`:
 use Phplrt\Parser\Analysis\Mode;
 use Phplrt\Parser\Analysis\Result\SuccessfulResult;
 
-$parser->analyze(new StringSource('name = "x"'), Mode::SyntaxCheck) instanceof SuccessfulResult; // true
-$parser->analyze(new StringSource('name ='), Mode::SyntaxCheck) instanceof SuccessfulResult;     // false
+$parser->analyze(StringSource::createFromString('name = "x"'), Mode::SyntaxCheck) instanceof SuccessfulResult; // true
+$parser->analyze(StringSource::createFromString('name ='), Mode::SyntaxCheck) instanceof SuccessfulResult;     // false
 ```
 
 It also tells you *how much* of the input is valid and what stands in the way,
@@ -298,7 +299,7 @@ use Phplrt\Compiler\Compiler;
 use Phplrt\Source\FileSource;
 
 new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->generate()
         ->withNamespaceName('App\Config')
         ->withClassName('CompiledConfigParser')
@@ -340,7 +341,7 @@ Which you use like any other class - no compiler, no grammar file:
 ```php
 $parser = new App\Config\CompiledConfigParser();
 
-$parser->parse(new StringSource('debug = true'))[0]->name; // "debug"
+$parser->parse(StringSource::createFromString('debug = true'))[0]->name; // "debug"
 ```
 
 Add the generation call to your build script or a console command, and you
@@ -434,7 +435,7 @@ final readonly class ConfigParser extends CompiledConfigParser
 ```php
 $parser = new ConfigParser(['APP_ENV' => 'prod']);
 
-$parser->parse(new StringSource('env = ${APP_ENV}'))[0]
+$parser->parse(StringSource::createFromString('env = ${APP_ENV}'))[0]
     ->value->value; // "prod"
 ```
 

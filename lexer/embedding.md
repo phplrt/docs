@@ -117,7 +117,7 @@ See [Token Actions](/docs/compiler/grammar) for the full list.
 Parsing `"hello"` gives you a `TokenEmbedding`:
 
 ```php
-$result = $parser->parse(new StringSource('"hello"'));
+$result = $parser->parse(StringSource::createFromString('"hello"'));
 
 echo $result->value;          // '"'
 echo $result->children[0]->value; // 'hello'

@@ -121,10 +121,10 @@ use Phplrt\Compiler\Compiler;
 use Phplrt\Source\FileSource;
 
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$rules = $parser->parse(new FileSource(__DIR__ . '/expression.ebnf'));
+$rules = $parser->parse(FileSource::createFromPathname(__DIR__ . '/expression.ebnf'));
 ```
 
 Both spellings of everything are accepted on purpose: `::=` and `=` for the

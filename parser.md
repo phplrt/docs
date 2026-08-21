@@ -18,8 +18,8 @@ $parser->analyze($source); // reports what it made of the source, never throws
 ```php
 use Phplrt\Source\StringSource;
 
-$parser->parse(new StringSource('2 + 2')); // 4
-$parser->parse(new StringSource('2 +'));   // Syntax error, unexpected end of input
+$parser->parse(StringSource::createFromString('2 + 2')); // 4
+$parser->parse(StringSource::createFromString('2 +'));   // Syntax error, unexpected end of input
 ```
 
 `parse()` is the one you want almost always: the grammar describes the whole
@@ -36,7 +36,7 @@ You will rarely write one by hand. Normally you either
 
 ```php
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 ```
 
@@ -81,7 +81,7 @@ $parser = new Parser(
     ],
 );
 
-echo $parser->parse(new StringSource('1 + 2 + 3')); // 6
+echo $parser->parse(StringSource::createFromString('1 + 2 + 3')); // 6
 ```
 
 This is exactly what the compiler generates for you - it just also works out
@@ -169,9 +169,11 @@ will not discover this at runtime.
 
 ```php
 use Phplrt\Parser\Exception\UnexpectedTokenException;
+use Phplrt\Source\StringSource;
+use Phplrt\Source\VirtualSource;
 
 try {
-    $parser->parse(new VirtualStringSource('expr.txt', "1 + 2\n3 * (4 + )\n"));
+    $parser->parse(VirtualSource::createFromString('expr.txt', "1 + 2\n3 * (4 + )\n"));
 } catch (UnexpectedTokenException $e) {
     echo $e->getMessage(); // Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
     echo $e;               // ...plus the snippet below
@@ -218,7 +220,7 @@ A parse succeeds only if the grammar reads the whole source. Trailing junk is
 an error, not a stopping point:
 
 ```php
-$parser->parse(new StringSource('2 2')); // Syntax error, unexpected "2" (T_DIGIT)
+$parser->parse(StringSource::createFromString('2 2')); // Syntax error, unexpected "2" (T_DIGIT)
 ```
 
 ## Analysing A Source
@@ -236,7 +238,7 @@ use Phplrt\Parser\Analysis\Result\FailureResult;
 use Phplrt\Parser\Analysis\Result\PartialResult;
 use Phplrt\Parser\Analysis\Result\SuccessfulResult;
 
-$result = $parser->analyze(new StringSource('2 + 2 } and then some HTML'));
+$result = $parser->analyze(StringSource::createFromString('2 + 2 } and then some HTML'));
 
 $result instanceof PartialResult; // the grammar stopped before the end
 $result->value;                   // 4 - the same value parse() gives for "2 + 2"
@@ -323,7 +325,7 @@ what a prompt needs:
 ```php
 // Keep reading lines while the expression is only started
 while ($parser->analyze($input, Mode::SyntaxCheck) instanceof PartialResult) {
-    $input = new StringSource($input->content . "\n" . readline('... '));
+    $input = StringSource::createFromString($input->content . "\n" . readline('... '));
 }
 ```
 

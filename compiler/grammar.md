@@ -20,7 +20,7 @@ Save it as `grammar.pp3` and it is ready to use:
 
 ```php
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 ```
 

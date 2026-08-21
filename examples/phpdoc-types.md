@@ -263,10 +263,10 @@ use Phplrt\Source\FileSource;
 use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$type = $parser->parse(new StringSource('list<non-empty-string>'));
+$type = $parser->parse(StringSource::createFromString('list<non-empty-string>'));
 ```
 
 This is the grammar to copy when a docblock has to be understood rather than

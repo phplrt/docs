@@ -144,10 +144,10 @@ use Phplrt\Source\FileSource;
 use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$rule = $parser->parse(new StringSource("group in ['admin'] and points > 30"));
+$rule = $parser->parse(StringSource::createFromString("group in ['admin'] and points > 30"));
 ```
 
 `Chain` is the other half of the appeal: `user.group[0].name()` is read as a

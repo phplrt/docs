@@ -136,10 +136,10 @@ use Phplrt\Source\FileSource;
 use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$url = $parser->parse(new StringSource('https://example.com:8080/a/b?c=d#e'));
+$url = $parser->parse(StringSource::createFromString('https://example.com:8080/a/b?c=d#e'));
 ```
 
 `parse_url()` is faster and shorter, and this grammar is still worth reading:

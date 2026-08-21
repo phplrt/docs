@@ -60,7 +60,7 @@ $parser = $compiledParser->toParser(
     $compiledLexer->toLexer(),
 );
 
-$parser->parse(new StringSource('1 + 2 + 3'));
+$parser->parse(StringSource::createFromString('1 + 2 + 3'));
 ```
 
 Every `add*()` method returns the rule it created, so you can nest calls or

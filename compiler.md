@@ -16,10 +16,10 @@ use Phplrt\Source\FileSource;
 use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-echo $parser->parse(new StringSource('2 + 2'));
+echo $parser->parse(StringSource::createFromString('2 + 2'));
 ```
 
 `load()` reads the grammar (and everything it `%include`s), and `getParser()`
@@ -30,8 +30,8 @@ lexer and parser:
 
 ```php
 $compiler = new Compiler();
-$compiler->load(new FileSource(__DIR__ . '/lexemes.pp3'));
-$compiler->load(new FileSource(__DIR__ . '/expressions.pp3'));
+$compiler->load(FileSource::createFromPathname(__DIR__ . '/lexemes.pp3'));
+$compiler->load(FileSource::createFromPathname(__DIR__ . '/expressions.pp3'));
 
 $parser = $compiler->getParser();
 ```
@@ -43,7 +43,7 @@ requests. So: do it once, write the result to a file, and commit the file.
 
 ```php
 new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->generate()
         ->withNamespaceName('App\Language')
         ->withClassName('LanguageParser')
@@ -75,7 +75,7 @@ A grammar that did not come from a file (a `StringSource`, a string) is read as 
 newest format, since there is no extension to go by:
 
 ```php
-$compiler->load(new StringSource('%token T_DIGIT \d++  Num : <T_DIGIT> ;'));
+$compiler->load(StringSource::createFromString('%token T_DIGIT \d++  Num : <T_DIGIT> ;'));
 ```
 
 Reading a `.pp` file gives you a clear error rather than a confusing one:
@@ -127,7 +127,7 @@ The compiler is a thin layer over the two builders, and both are public:
 
 ```php
 $compiler = new Compiler();
-$compiler->load(new FileSource(__DIR__ . '/grammar.pp3'));
+$compiler->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'));
 
 // Add a token the grammar file does not mention
 $compiler->lexer->addPattern('#[^\n]*+')

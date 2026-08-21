@@ -102,10 +102,10 @@ use Phplrt\Source\FileSource;
 use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$constraint = $parser->parse(new StringSource('~1.2 || ^2.0 || 3.*'));
+$constraint = $parser->parse(StringSource::createFromString('~1.2 || ^2.0 || 3.*'));
 ```
 
 The grammar recognises the constraint and gives back its parts; deciding
