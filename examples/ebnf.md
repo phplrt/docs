@@ -118,13 +118,13 @@ Terminal
 
 ```php
 use Phplrt\Compiler\Compiler;
-use Phplrt\Source\File;
+use Phplrt\Source\FileSource;
 
 $parser = new Compiler()
-    ->load(new File(__DIR__ . '/grammar.pp3'))
+    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$rules = $parser->parse(new File(__DIR__ . '/expression.ebnf'));
+$rules = $parser->parse(new FileSource(__DIR__ . '/expression.ebnf'));
 ```
 
 Both spellings of everything are accepted on purpose: `::=` and `=` for the

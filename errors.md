@@ -23,10 +23,10 @@ exception renders like this when converted to a string.
 
 ```php
 use Phplrt\Parser\Exception\UnexpectedTokenException;
-use Phplrt\Source\VirtualFile;
+use Phplrt\Source\VirtualStringSource;
 
 try {
-    $parser->parse(new VirtualFile('expr.txt', $input));
+    $parser->parse(new VirtualStringSource('expr.txt', $input));
 } catch (UnexpectedTokenException $e) {
     echo $e->getMessage(); // Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
     echo $e;               // ...plus the snippet above
@@ -44,11 +44,11 @@ $e->source;        // the source it was reading
 
 ## Give Your Sources A Name
 
-This is the one thing you have to do yourself. A bare `Source` has no name,
-so an error can only show the snippet:
+This is the one thing you have to do yourself. A bare `StringSource` has no
+name, so an error can only show the snippet:
 
 ```php
-$parser->parse(new Source($input));
+$parser->parse(new StringSource($input));
 ```
 
 ```
@@ -58,18 +58,19 @@ error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER), T_PLUS
   | ^
 ```
 
-Wrap the input in a `File` or a `VirtualFile` and the error can say *where*:
+Wrap the input in a `FileSource` or a `VirtualStringSource` and the error can
+say *where*:
 
 ```php
-$parser->parse(new VirtualFile('user-input.txt', $input));
+$parser->parse(new VirtualStringSource('user-input.txt', $input));
 ```
 
 ```
  --> user-input.txt:2:1
 ```
 
-`VirtualFile` costs nothing - it is a string with a name attached - so use it
-even when the input never touched the disk.
+`VirtualStringSource` costs nothing - it is a string with a name attached - so
+use it even when the input never touched the disk.
 
 ## Catching Everything
 
@@ -111,9 +112,9 @@ treatment. `ErrorPrinter` renders any offset in any source:
 
 ```php
 use Phplrt\Exception\ErrorPrinter;
-use Phplrt\Source\VirtualFile;
+use Phplrt\Source\VirtualStringSource;
 
-$source = new VirtualFile('config.txt', <<<'TXT'
+$source = new VirtualStringSource('config.txt', <<<'TXT'
     name = "phplrt"
     version = four
     debug = true

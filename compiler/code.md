@@ -181,7 +181,7 @@ the imports on the generated file instead:
 
 ```php
 new Compiler()
-    ->load(new File(__DIR__ . '/grammar.pp3'))
+    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
     ->generate()
         ->withNamespaceName('App\Parser')
         ->withClassImport('App\Ast\NumberNode')

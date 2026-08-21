@@ -217,14 +217,14 @@ Boolean -> { return new \App\Ast\Literal($children->value === 'true', $offset); 
 
 ```php
 use Phplrt\Compiler\Compiler;
-use Phplrt\Source\File;
-use Phplrt\Source\Source;
+use Phplrt\Source\FileSource;
+use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new File(__DIR__ . '/grammar.pp3'))
+    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$ast = $parser->parse(new Source(<<<'CONF'
+$ast = $parser->parse(new StringSource(<<<'CONF'
     // A small config
     name = "phplrt"
     version = 4
@@ -240,12 +240,12 @@ $ast[0]->offset;       // 18
 $ast[1]->value->value; // 4    - an int, because the reducer cast it
 $ast[2]->value->value; // true - a bool, same
 
-$parser->parse(new Source('')); // [] - an empty config is still a config
+$parser->parse(new StringSource('')); // [] - an empty config is still a config
 ```
 
-Notice the two kinds of "source": `File` reads from disk, `Source` wraps a
-string you already have. The grammar is a source, and so is the text being
-parsed - they are the same kind of object.
+Notice the two kinds of "source": `FileSource` reads from disk and
+`StringSource` wraps a string you already have. The grammar is a source, and
+so is the text being parsed - they are the same kind of object.
 
 ## Step 5: Errors
 
@@ -253,10 +253,10 @@ Feed it something broken, and you get an exception that knows where it
 happened:
 
 ```php
-use Phplrt\Source\VirtualFile;
+use Phplrt\Source\VirtualStringSource;
 
-// VirtualFile is a string that also has a name, so errors can point at it
-$parser->parse(new VirtualFile('config.txt', <<<'CONF'
+// VirtualStringSource is a string with a name, so errors can point at it
+$parser->parse(new VirtualStringSource('config.txt', <<<'CONF'
     name = "phplrt"
     version = = 4
     debug = true
@@ -280,8 +280,8 @@ anything, use `analyze()`:
 use Phplrt\Parser\Analysis\Mode;
 use Phplrt\Parser\Analysis\Result\SuccessfulResult;
 
-$parser->analyze(new Source('name = "x"'), Mode::SyntaxCheck) instanceof SuccessfulResult; // true
-$parser->analyze(new Source('name ='), Mode::SyntaxCheck) instanceof SuccessfulResult;     // false
+$parser->analyze(new StringSource('name = "x"'), Mode::SyntaxCheck) instanceof SuccessfulResult; // true
+$parser->analyze(new StringSource('name ='), Mode::SyntaxCheck) instanceof SuccessfulResult;     // false
 ```
 
 It also tells you *how much* of the input is valid and what stands in the way,
@@ -295,10 +295,10 @@ change between requests. Generate a PHP file instead and commit it:
 
 ```php
 use Phplrt\Compiler\Compiler;
-use Phplrt\Source\File;
+use Phplrt\Source\FileSource;
 
 new Compiler()
-    ->load(new File(__DIR__ . '/grammar.pp3'))
+    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
     ->generate()
         ->withNamespaceName('App\Config')
         ->withClassName('CompiledConfigParser')
@@ -340,7 +340,7 @@ Which you use like any other class - no compiler, no grammar file:
 ```php
 $parser = new App\Config\CompiledConfigParser();
 
-$parser->parse(new Source('debug = true'))[0]->name; // "debug"
+$parser->parse(new StringSource('debug = true'))[0]->name; // "debug"
 ```
 
 Add the generation call to your build script or a console command, and you
@@ -434,7 +434,7 @@ final readonly class ConfigParser extends CompiledConfigParser
 ```php
 $parser = new ConfigParser(['APP_ENV' => 'prod']);
 
-$parser->parse(new Source('env = ${APP_ENV}'))[0]
+$parser->parse(new StringSource('env = ${APP_ENV}'))[0]
     ->value->value; // "prod"
 ```
 

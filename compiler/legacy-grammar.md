@@ -6,7 +6,7 @@ being touched.
 
 ```php
 $parser = new Compiler()
-    ->load(new File(__DIR__ . '/grammar.pp2'))
+    ->load(new FileSource(__DIR__ . '/grammar.pp2'))
     ->getParser();
 ```
 

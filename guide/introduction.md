@@ -48,10 +48,10 @@ Here is a calculator that adds numbers. The grammar is several lines:
 
 ```php
 use Phplrt\Compiler\Compiler;
-use Phplrt\Source\Source;
+use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new Source(<<<'PP3'
+    ->load(new StringSource(<<<'PP3'
         %token T_DIGIT       \d++
         %token T_PLUS        \+
         %skip  T_WHITESPACE  \s++
@@ -66,7 +66,7 @@ $parser = new Compiler()
         PP3))
     ->getParser();
 
-echo $parser->parse(new Source('2 + 3 + 4')); // 9
+echo $parser->parse(new StringSource('2 + 3 + 4')); // 9
 ```
 
 That is the whole library in miniature: `%token` describes the words,

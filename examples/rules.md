@@ -140,14 +140,14 @@ FunctionCall
 
 ```php
 use Phplrt\Compiler\Compiler;
-use Phplrt\Source\File;
-use Phplrt\Source\Source;
+use Phplrt\Source\FileSource;
+use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new File(__DIR__ . '/grammar.pp3'))
+    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$rule = $parser->parse(new Source("group in ['admin'] and points > 30"));
+$rule = $parser->parse(new StringSource("group in ['admin'] and points > 30"));
 ```
 
 `Chain` is the other half of the appeal: `user.group[0].name()` is read as a

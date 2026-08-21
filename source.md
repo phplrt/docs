@@ -35,16 +35,17 @@ on disk, at which point it reads again.
 
 ## The Kinds of Source
 
-Every source is named after what it reads: a `*Source` class is a source, and
-a `*Stream` class is the cursor one of them hands out.
+Every source is named after what it reads: a `*Source` class in
+`Phplrt\Source` is a source, and a `*Stream` class in `Phplrt\Source\Stream`
+is the cursor one of them hands out.
 
-| Class                       | Reads                              |
-|-----------------------------|------------------------------------|
-| `StringSource`              | a string in memory                 |
-| `FileSource`                | a real file on disk                |
-| `ResourceSource`            | an open resource                   |
-| `VirtualStringFileSource`   | a string, under a pathname         |
-| `VirtualResourceFileSource` | an open resource, under a pathname |
+| Class                    | Reads                              |
+|--------------------------|------------------------------------|
+| `StringSource`           | a string in memory                 |
+| `FileSource`             | a real file on disk                |
+| `ResourceSource`         | an open resource                   |
+| `VirtualStringSource`    | a string, under a pathname         |
+| `VirtualResourceSource`  | an open resource, under a pathname |
 
 ### FileSource
 
@@ -75,16 +76,16 @@ use Phplrt\Source\StringSource;
 $source = new StringSource('2 + 2');
 ```
 
-### VirtualStringFileSource
+### VirtualStringSource
 
 A string that pretends to be a file. Nothing is read from disk, but errors
 can still point at a name - handy for code that came from a database, an
 HTTP request, or a test.
 
 ```php
-use Phplrt\Source\VirtualStringFileSource;
+use Phplrt\Source\VirtualStringSource;
 
-$source = new VirtualStringFileSource('user-input.txt', '2 + 2');
+$source = new VirtualStringSource('user-input.txt', '2 + 2');
 
 echo $source->pathname; // "user-input.txt"
 echo $source->content;  // "2 + 2"
@@ -96,13 +97,20 @@ An open resource.
 
 ```php
 use Phplrt\Source\ResourceSource;
-use Phplrt\Source\VirtualResourceFileSource;
+use Phplrt\Source\VirtualResourceSource;
 
 $source = new ResourceSource(\fopen('php://input', 'rb'));
 
 // ...or with a name attached
-$named = new VirtualResourceFileSource('request.json', \fopen('php://input', 'rb'));
+$named = new VirtualResourceSource('request.json', \fopen('php://input', 'rb'));
+
+echo $source->isSeekable; // whether the resource can be rewound
+echo $source->uri;        // "php://input", or null for a resource without one
+echo $source->mode;       // "rb"
 ```
+
+The resource has to be open for reading: one opened for writing alone is
+rejected right away rather than at the moment somebody tries to read it.
 
 ## The Factory
 
@@ -128,7 +136,7 @@ the constructors are for, and it is the only way to reach the named kinds:
 ```php
 new FileSource('/app/x.txt');
 new StringSource('2 + 2');
-new VirtualStringFileSource('virtual.txt', '2 + 2');
+new VirtualStringSource('virtual.txt', '2 + 2');
 new ResourceSource($resource);
 ```
 
@@ -145,7 +153,7 @@ use Phplrt\Source\SourceFactory;
 new SourceFactory([
     new Driver\StringSourceDriver(),      // string       -> StringSource
     new Driver\SplFileInfoSourceDriver(), // \SplFileInfo -> FileSource
-    new Driver\StreamSourceDriver(),      // resource     -> ResourceSource
+    new Driver\ResourceSourceDriver(),    // resource     -> ResourceSource
 ]);
 ```
 
@@ -190,22 +198,27 @@ use Phplrt\Contracts\Source\ReadableInterface;
 // Anything readable: FileSource, StringSource, ResourceSource...
 function parse(ReadableInterface $source): mixed { /* ... */ }
 
-// Only the ones that have a name: FileSource, VirtualStringFileSource...
+// Only the ones that have a name: FileSource, VirtualStringSource...
 function report(FileInterface $source): string
 {
     return $source->pathname;
 }
 ```
 
-`ReadableInterface` gives you a property and a method:
+`ReadableInterface` gives you two properties and a method:
 
 ```php
-$source->content;            // string
+$source->content;        // string
+$source->size;           // int|null - null when it cannot be known in advance
 $source->createStream(); // ReadableStreamInterface
 ```
 
-Both may throw `SourceExceptionInterface` - a file can disappear between the
-moment you name it and the moment you read it.
+`$size` is there so that nobody has to read a source out just to find out how
+long it is: a file answers with `filesize()`, a string with `strlen()`, and a
+source over a pipe answers `null`, because a pipe has no size until it ends.
+
+All three may throw `SourceExceptionInterface` - a file can disappear between
+the moment you name it and the moment you read it.
 
 ```php
 use Phplrt\Contracts\Source\Exception\SourceExceptionInterface;
@@ -223,13 +236,13 @@ try {
 
 `$content` gives you everything at once, which is fine until the source is
 larger than the memory you are willing to spend on it. `createStream()`
-gives you a `ReadableStreamInterface` instead: a read-only, forward-only
-cursor over the same data.
+gives you a `ReadableStreamInterface` instead: a read-only cursor over the
+same data.
 
 ```php
 $stream = $source->createStream();
 
-while (!$stream->isCompleted) {
+while (!$stream->isEof) {
     $chunk = $stream->read(4096);
 
     // ...
@@ -237,26 +250,72 @@ while (!$stream->isCompleted) {
 ```
 
 `read()` returns up to the number of bytes you asked for, and an empty string
-once there is nothing left; `$isCompleted` is what tells you the data is over,
-and `$offset` is where you are in it.
+once there is nothing left; `$isEof` is what tells you the data is over, and
+`$offset` is where you are in it. Unlike `feof()`, `$isEof` is true as soon as
+there is nothing more to read, so the loop above never spins an extra time.
 
-There is no way to go back, which is why this is a method rather than a
-property: reading moves the cursor, so every call hands you a fresh one and
-reading the source a second time means calling it again.
-
-A fresh cursor is not the same as fresh data, though. A source over a resource
-gives you a new stream over that same resource, and the resource is only read
-once:
+This is a method rather than a property because reading moves the cursor:
+every call hands you a fresh one, so reading the source a second time means
+calling it again.
 
 ```php
 $file = new FileSource('/app/x.txt');
-$file->createStream()->read(); // reads the file
-$file->createStream()->read(); // opens it again, reads it again
-
-$resource = new ResourceSource(\fopen('php://input', 'rb'));
-$resource->createStream()->read(); // reads the input
-$resource->createStream()->read(); // "" - the resource is already at its end
+$file->createStream()->read(1024); // reads the file
+$file->createStream()->read(1024); // opens it again, reads it again
 ```
+
+### Going Back
+
+A cursor that can be rewound implements `SeekableStreamInterface`, where
+`$offset` can be written to as well as read:
+
+```php
+use Phplrt\Contracts\Source\Stream\SeekableStreamInterface;
+
+$stream = $source->createStream();
+
+if ($stream instanceof SeekableStreamInterface) {
+    $stream->offset = 42;
+
+    echo $stream->read(8); // the eight bytes at offset 42
+}
+```
+
+A string and a file are seekable; a pipe, a socket and `php://input` are not,
+which is why the check is needed at all. `StringSource` narrows the return
+type, so a source you constructed yourself needs no check:
+
+```php
+new StringSource('2 + 2')->createStream(); // StringStream, always seekable
+```
+
+A source over a resource you cannot rewind is readable **once**: its cursors
+share the position of the resource itself, so a second `createStream()` (or a
+`$content` read after one) throws instead of quietly handing you what is left.
+
+```php
+$input = new ResourceSource(\fopen('php://input', 'rb'));
+
+$input->createStream()->read(1024); // reads the input
+$input->createStream();             // NotReadableException
+```
+
+### Who Closes The Resource
+
+A `ResourceSource` never closes a resource it did not open - the one who
+opened it is the one to close it. Pass `autoclose: true` when you would rather
+hand that duty over:
+
+```php
+$owned = new ResourceSource(\fopen('/app/x.txt', 'rb'), autoclose: true);
+
+unset($owned); // the file is closed here
+```
+
+The cursors follow the same rule. A `FileSource` opens a file of its own on
+every `createStream()` call, so its cursor closes it; a `ResourceSource` hands
+out cursors over a resource that belongs to somebody else, so they close
+nothing.
 
 ## Bring Your Own
 
@@ -266,7 +325,7 @@ yourself and every other phplrt component will accept it:
 
 ```php
 use Phplrt\Contracts\Source\FileInterface;
-use Phplrt\Contracts\Source\ReadableStreamInterface;
+use Phplrt\Contracts\Source\Stream\ReadableStreamInterface;
 use Phplrt\Source\Stream\StringStream;
 
 final class DatabaseSource implements FileInterface
@@ -283,6 +342,10 @@ final class DatabaseSource implements FileInterface
             ->fetchColumn();
     }
 
+    public ?int $size {
+        get => \strlen($this->content);
+    }
+
     public function createStream(): ReadableStreamInterface
     {
         return new StringStream($this->content);
@@ -290,7 +353,8 @@ final class DatabaseSource implements FileInterface
 }
 ```
 
-`StringStream` and `ResourceStream` cover the two cases you are likely to
-need - data you already hold as a string, and data behind an open resource -
-so implementing `ReadableStreamInterface` yourself is only worth it when the data
-arrives in chunks of its own, such as a paged HTTP response.
+`StringStream`, `SeekableResourceStream` and `ForwardResourceStream` cover the
+cases you are likely to need - data you already hold as a string, and data
+behind an open resource, whether or not it can be rewound. Implementing
+`ReadableStreamInterface` yourself is only worth it when the data arrives in
+chunks of its own, such as a paged HTTP response.

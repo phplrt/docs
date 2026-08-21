@@ -111,15 +111,15 @@ without running a single reducer:
 use Phplrt\Compiler\Compiler;
 use Phplrt\Parser\Analysis\Mode;
 use Phplrt\Parser\Analysis\Result\SuccessfulResult;
-use Phplrt\Source\File;
-use Phplrt\Source\Source;
+use Phplrt\Source\FileSource;
+use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new File(__DIR__ . '/grammar.pp3'))
+    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$parser->analyze(new Source('*/15 * * * *'), Mode::SyntaxCheck) instanceof SuccessfulResult; // true
-$parser->analyze(new Source('*/15 * *'), Mode::SyntaxCheck) instanceof SuccessfulResult;     // false
+$parser->analyze(new StringSource('*/15 * * * *'), Mode::SyntaxCheck) instanceof SuccessfulResult; // true
+$parser->analyze(new StringSource('*/15 * *'), Mode::SyntaxCheck) instanceof SuccessfulResult;     // false
 ```
 
 `Mode::SyntaxCheck` skips value building entirely, which is the cheapest way

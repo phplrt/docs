@@ -259,14 +259,14 @@ ArrayShapeKey
 
 ```php
 use Phplrt\Compiler\Compiler;
-use Phplrt\Source\File;
-use Phplrt\Source\Source;
+use Phplrt\Source\FileSource;
+use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new File(__DIR__ . '/grammar.pp3'))
+    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$type = $parser->parse(new Source('list<non-empty-string>'));
+$type = $parser->parse(new StringSource('list<non-empty-string>'));
 ```
 
 This is the grammar to copy when a docblock has to be understood rather than

@@ -15,7 +15,7 @@ Describe the tokens, build the lexer, run it:
 
 ```php
 use Phplrt\Lexer\Builder\LexerBuilder;
-use Phplrt\Source\Source;
+use Phplrt\Source\StringSource;
 
 $builder = new LexerBuilder();
 $builder->addPattern('\d++', 'T_DIGIT');
@@ -25,7 +25,7 @@ $builder->addPattern('\s++', 'T_WHITESPACE');
 $lexer = $builder->build()
     ->toLexer();
 
-foreach ($lexer->lex(new Source('23 + 42')) as $token) {
+foreach ($lexer->lex(new StringSource('23 + 42')) as $token) {
     echo $token, "\n";
 }
 ```
@@ -112,7 +112,7 @@ $builder->addValue('true', 'T_TRUE');
 and where it was:
 
 ```php
-foreach ($lexer->lex(new Source('23 + 42')) as $token) {
+foreach ($lexer->lex(new StringSource('23 + 42')) as $token) {
     $token->id;      // int    - 0, the position of its definition
     $token->name;    // string - "T_DIGIT"
     $token->value;   // string - "23"
@@ -125,7 +125,7 @@ foreach ($lexer->lex(new Source('23 + 42')) as $token) {
 You can also start somewhere other than the beginning:
 
 ```php
-$lexer->lex(new Source('12 34'), offset: 3);
+$lexer->lex(new StringSource('12 34'), offset: 3);
 // only "34" and the end of input
 ```
 
@@ -145,7 +145,7 @@ $builder->addPattern('\s++')
 $lexer = $builder->build()
     ->toLexer();
 
-foreach ($lexer->lex(new Source('12 @ 34')) as $token) {
+foreach ($lexer->lex(new StringSource('12 @ 34')) as $token) {
     echo $token . "\n";
 }
 

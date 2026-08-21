@@ -20,7 +20,7 @@ A grammar needs a lexer to refer to, so both builders work together:
 ```php
 use Phplrt\Lexer\Builder\LexerBuilder;
 use Phplrt\Parser\Builder\ParserBuilder;
-use Phplrt\Source\Source;
+use Phplrt\Source\StringSource;
 
 // --------------------------------------------
 //  Lexer Builder
@@ -60,7 +60,7 @@ $parser = $compiledParser->toParser(
     $compiledLexer->toLexer(),
 );
 
-$parser->parse(new Source('1 + 2 + 3'));
+$parser->parse(new StringSource('1 + 2 + 3'));
 ```
 
 Every `add*()` method returns the rule it created, so you can nest calls or

@@ -231,14 +231,14 @@ Literal
 
 ```php
 use Phplrt\Compiler\Compiler;
-use Phplrt\Source\File;
-use Phplrt\Source\Source;
+use Phplrt\Source\FileSource;
+use Phplrt\Source\StringSource;
 
 $parser = new Compiler()
-    ->load(new File(__DIR__ . '/grammar.pp3'))
+    ->load(new FileSource(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$pattern = $parser->parse(new Source('(?<year>[0-9]{4})-[0-9]{2}'));
+$pattern = $parser->parse(new StringSource('(?<year>[0-9]{4})-[0-9]{2}'));
 ```
 
 The pattern is read without the delimiters and the modifiers around it, so

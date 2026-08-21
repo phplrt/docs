@@ -30,10 +30,10 @@ is lost the next time the build runs.
 ```php
 // bin/build-parser.php
 use Phplrt\Compiler\Compiler;
-use Phplrt\Source\File;
+use Phplrt\Source\FileSource;
 
 new Compiler()
-    ->load(new File(__DIR__ . '/../resources/grammar.pp3'))
+    ->load(new FileSource(__DIR__ . '/../resources/grammar.pp3'))
     ->generate()
         ->withNamespaceName('App\Json')
         ->withClassName('CompiledJsonParser')
@@ -45,7 +45,7 @@ that is the end of the story:
 
 ```php
 new App\Json\CompiledJsonParser()
-    ->parse(new Source('{"a": 1}'));
+    ->parse(new StringSource('{"a": 1}'));
 ```
 
 When there *is* something of yours to add - a setting, a helper the grammar
@@ -114,12 +114,12 @@ final readonly class JsonParser extends CompiledJsonParser
 
 ```php
 new JsonParser()
-    ->parse(new Source('9223372036854775808'))
+    ->parse(new StringSource('9223372036854775808'))
     ->value;
 // float(9.223372036854776E+18)
 
 new JsonParser(bigIntAsString: true)
-    ->parse(new Source('9223372036854775808'))
+    ->parse(new StringSource('9223372036854775808'))
     ->value;
 // string(19) "9223372036854775808"
 ```
@@ -257,7 +257,7 @@ contract is stated in the open, which means widening it is your call:
 namespace App\Json;
 
 use Phplrt\Contracts\Source\ReadableInterface;
-use Phplrt\Source\Source;
+use Phplrt\Source\StringSource;
 
 final readonly class JsonParser extends CompiledJsonParser
 {
@@ -265,7 +265,7 @@ final readonly class JsonParser extends CompiledJsonParser
     public function parse(ReadableInterface|string $source): JsonValue
     {
         if (is_string($source)) {
-            $source = new Source($source);
+            $source = new StringSource($source);
         }
 
         return parent::parse($source);
@@ -275,7 +275,7 @@ final readonly class JsonParser extends CompiledJsonParser
 
 ```php
 $parser->parse('{"a": 1}');                    // a string is the document
-$parser->parse(new File(__DIR__ . '/a.json')); // a file is a file
+$parser->parse(new FileSource(__DIR__ . '/a.json')); // a file is a file
 ```
 
 For the "figure out what this is" behaviour of 3.x, hand the job to
