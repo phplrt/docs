@@ -280,7 +280,7 @@ A cursor that can be rewound implements `SeekableStreamInterface`, where
 `$offset` can be written to as well as read:
 
 ```php
-use Phplrt\Contracts\Source\Stream\SeekableStreamInterface;
+use Phplrt\Contracts\Source\SeekableStreamInterface;
 
 $stream = $source->createStream();
 
@@ -335,7 +335,7 @@ yourself and every other phplrt component will accept it:
 
 ```php
 use Phplrt\Contracts\Source\FileInterface;
-use Phplrt\Contracts\Source\Stream\ReadableStreamInterface;
+use Phplrt\Contracts\Source\ReadableStreamInterface;
 use Phplrt\Source\Stream\StringStream;
 
 final class DatabaseSource implements FileInterface
