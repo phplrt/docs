@@ -38,6 +38,7 @@ Here is the full list:
 | Package                  | What it does                                                    |
 |--------------------------|-----------------------------------------------------------------|
 | `phplrt/source`          | Reads source code from files, strings and streams               |
+| `phplrt/position`        | Converts an offset into a line and a column, and back           |
 | `phplrt/lexer`           | Splits source code into tokens                                  |
 | `phplrt/parser`          | Recognizes tokens against a grammar and builds a result         |
 | `phplrt/exception`       | Renders errors with a snippet of the code around them           |
