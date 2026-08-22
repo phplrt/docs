@@ -260,24 +260,41 @@ analysis and code generation possible.
 (`Phplrt\Parser\Internal\Buffer`). The parser no longer exposes a buffer, and
 you do not choose one.
 
-### The Position and Visitor Packages Are Gone
+### Positions Are Calculated By A Factory
 
 > Likelihood Of Impact: **Medium**
 
-`phplrt/position` and `phplrt/visitor` have been removed.
+`phplrt/position` is still there, with a smaller API. A `Position` is now the
+line and the column alone, and the offset it was built from is not a part of
+it. Getters became properties, and the way back is a method of the factory
+rather than of the position.
 
-Positions: the exception component computes lines and columns when it renders
-an error, which was the main use for it. See
-[Error Reporting](/docs/errors).
+```php
+// 3.x
+$position = $factory->createFromOffset($source, 42);
+$line = $position->getLine();
+$column = $position->getColumn();
+$offset = $position->getOffset();
 
-Visitors: 4.x does not prescribe an AST shape, so it cannot prescribe a way to
-walk one. Your nodes are your own classes; walk them however suits them.
+// 4.x
+$position = $factory->createFromOffset($source, 42);
+$line = $position->line;
+$column = $position->column;
+// $offset was already known before the call: 42 
+```
+
+`createAtStarting()` is spelled `new Position()`, and `createAtEnding()` is an
+offset past the end of the source, which is corrected to the end of it.
+`Interval`, `IntervalFactoryTrait` and `PositionFactoryTrait` are gone.
+
+See [Position](/docs/position).
 
 ### Sources Are Constructed Directly
 
 > Likelihood Of Impact: **Medium**
 
-The static factory methods on `File` are gone.
+The static factory methods on `File` still work, but are deprecated and will
+be removed in 5.0.
 
 ```php
 // 3.x
