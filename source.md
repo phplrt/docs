@@ -29,22 +29,21 @@ say:
  --> /app/config/routes.txt:7:12
 ```
 
-The second is laziness. A `FileSource` does not read the disk until somebody
-asks for its content, and once it has, it remembers - until the file changes
-on disk, at which point it reads again.
+The second is laziness. A `FileSource` does not touch the disk until somebody
+asks it to, and the file it opens then belongs to it until the source itself
+is gone.
 
 ## The Kinds of Source
 
-Every source is named after what it reads: a `*Source` class in
-`Phplrt\Source` is a source, and a `*Stream` class in `Phplrt\Source\Stream`
-is the cursor one of them hands out.
+Every source is named after what it reads, and every one of them is a cursor
+over its own data as well.
 
-| Class               | Reads                              |
-|---------------------|------------------------------------|
-| `StringSource`      | a string in memory                 |
-| `FileSource`        | a real file on disk                |
-| `ResourceSource`    | an open resource                   |
-| `VirtualSource` | another source, under a pathname   |
+| Class            | Reads                            |
+|------------------|----------------------------------|
+| `StringSource`   | a string in memory               |
+| `FileSource`     | a real file on disk              |
+| `ResourceSource` | an open resource                 |
+| `VirtualSource`  | another source, under a pathname |
 
 ### FileSource
 
@@ -313,11 +312,11 @@ $input->content; // NotReadableException
 ### Who Closes The Resource
 
 A `ResourceSource` never closes a resource it did not open - the one who
-opened it is the one to close it. Pass `autoclose: true` when you would rather
-hand that duty over:
+opened it is the one to close it. Construct it with `autoclose: true` when you
+would rather hand that duty over:
 
 ```php
-$owned = ResourceSource::createFromResource(\fopen('/app/x.txt', 'rb'), autoclose: true);
+$owned = new ResourceSource(\fopen('/app/x.txt', 'rb'), autoclose: true);
 
 unset($owned); // the file is closed here
 ```
