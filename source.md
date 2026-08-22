@@ -215,19 +215,22 @@ function report(FileInterface $source): string
 }
 ```
 
-`ReadableInterface` gives you two properties and a method:
+`ReadableInterface` gives you the data of the source and a cursor over it:
 
 ```php
-$source->content;        // string
-$source->size;           // int|null - null when it cannot be known in advance
-$source->createStream(); // ReadableStreamInterface
+$source->content;    // string   - what is left from where the cursor is
+$source->size;       // int|null - null when it cannot be known in advance
+$source->offset;     // int      - where the next read starts
+$source->isSeekable; // bool     - whether the cursor can be moved at will
+$source->isEof;      // bool     - whether there is nothing left to read
+$source->read(4096); // string
 ```
 
 `$size` is there so that nobody has to read a source out just to find out how
 long it is: a file answers with `filesize()`, a string with `strlen()`, and a
 source over a pipe answers `null`, because a pipe has no size until it ends.
 
-All three may throw `SourceExceptionInterface` - a file can disappear between
+All of them may throw `SourceExceptionInterface` - a file can disappear between
 the moment you name it and the moment you read it.
 
 ```php
@@ -245,15 +248,12 @@ try {
 ### Reading In Chunks
 
 `$content` gives you everything at once, which is fine until the source is
-larger than the memory you are willing to spend on it. `createStream()`
-gives you a `ReadableStreamInterface` instead: a read-only cursor over the
-same data.
+larger than the memory you are willing to spend on it. Every source is also a
+cursor over its own data:
 
 ```php
-$stream = $source->createStream();
-
-while (!$stream->isEof) {
-    $chunk = $stream->read(4096);
+while (!$source->isEof) {
+    $chunk = $source->read(4096);
 
     // ...
 }
@@ -264,50 +264,50 @@ once there is nothing left; `$isEof` is what tells you the data is over, and
 `$offset` is where you are in it. Unlike `feof()`, `$isEof` is true as soon as
 there is nothing more to read, so the loop above never spins an extra time.
 
-This is a method rather than a property because reading moves the cursor:
-every call hands you a fresh one, so reading the source a second time means
-calling it again.
+`$content` is what is left of the source from where the cursor is, and taking
+it does not move the cursor:
 
 ```php
-$file = FileSource::createFromPathname('/app/x.txt');
-$file->createStream()->read(1024); // reads the file
-$file->createStream()->read(1024); // opens it again, reads it again
+$source = StringSource::createFromString('2 + 2');
+
+$source->read(2); // '2 '
+$source->content; // '+ 2'
+$source->content; // '+ 2' again
+$source->offset;  // 2
 ```
 
 ### Going Back
 
-A cursor that can be rewound implements `SeekableStreamInterface`, where
-`$offset` can be written to as well as read:
+`$offset` can be written to as well as read, which moves the cursor to an
+arbitrary position:
 
 ```php
-use Phplrt\Contracts\Source\SeekableStreamInterface;
+$source->offset = 42;
 
-$stream = $source->createStream();
+echo $source->read(8); // the eight bytes at offset 42
+```
 
-if ($stream instanceof SeekableStreamInterface) {
-    $stream->offset = 42;
+A string and a file can always be moved; a pipe, a socket and `php://input`
+cannot, and answer `false` to `$isSeekable`:
 
-    echo $stream->read(8); // the eight bytes at offset 42
+```php
+if ($source->isSeekable) {
+    $source->offset = 0;
 }
 ```
 
-A string and a file are seekable; a pipe, a socket and `php://input` are not,
-which is why the check is needed at all. `StringSource` narrows the return
-type, so a source you constructed yourself needs no check:
+Moving a source that answers `false` throws `LogicException`. Whether a source
+can be moved depends on what it is built over rather than on its class, which
+is why this is a property and not a separate interface.
 
-```php
-StringSource::createFromString('2 + 2')->createStream(); // StringStream, always seekable
-```
-
-A source over a resource you cannot rewind is readable **once**: its cursors
-share the position of the resource itself, so a second `createStream()` (or a
-`$content` read after one) throws instead of quietly handing you what is left.
+A source over a resource you cannot rewind is readable **once**: a second
+`$content` read throws instead of quietly handing you what is left.
 
 ```php
 $input = ResourceSource::createFromResource(\fopen('php://input', 'rb'));
 
-$input->createStream()->read(1024); // reads the input
-$input->createStream();             // NotReadableException
+$input->content; // reads the input
+$input->content; // NotReadableException
 ```
 
 ### Who Closes The Resource
@@ -322,49 +322,41 @@ $owned = ResourceSource::createFromResource(\fopen('/app/x.txt', 'rb'), autoclos
 unset($owned); // the file is closed here
 ```
 
-The cursors follow the same rule. A `FileSource` opens a file of its own on
-every `createStream()` call, so its cursor closes it; a `ResourceSource` hands
-out cursors over a resource that belongs to somebody else, so they close
-nothing.
+A `FileSource` opens a file of its own the first time it is read and closes it
+along with itself, so a file is held only for as long as the source that names
+it is alive.
 
 ## Bring Your Own
 
-`ReadableInterface` is small on purpose. If your source code lives somewhere
-unusual - a zip archive, a remote service, a database row - implement it
-yourself and every other phplrt component will accept it:
+If your source code lives somewhere unusual - a zip archive, a remote service,
+a database row - name it with a `VirtualSource` over the data you already hold,
+and every other phplrt component will accept it:
 
 ```php
-use Phplrt\Contracts\Source\FileInterface;
-use Phplrt\Contracts\Source\ReadableStreamInterface;
-use Phplrt\Source\Stream\StringStream;
+use Phplrt\Source\VirtualSource;
 
-final class DatabaseSource implements FileInterface
+final class TemplateSources
 {
     public function __construct(
-        public readonly string $pathname,
         private readonly \PDO $pdo,
-        private readonly int $id,
     ) {}
 
-    public string $content {
-        get => $this->pdo
-            ->query("SELECT body FROM templates WHERE id = {$this->id}")
-            ->fetchColumn();
-    }
-
-    public ?int $size {
-        get => \strlen($this->content);
-    }
-
-    public function createStream(): ReadableStreamInterface
+    public function createFromId(int $id): VirtualSource
     {
-        return new StringStream($this->content);
+        $body = $this->pdo
+            ->query("SELECT body FROM templates WHERE id = {$id}")
+            ->fetchColumn();
+
+        return VirtualSource::createFromString("template://{$id}", $body);
     }
 }
 ```
 
-`StringStream`, `SeekableResourceStream` and `ForwardResourceStream` cover the
-cases you are likely to need - data you already hold as a string, and data
-behind an open resource, whether or not it can be rewound. Implementing
-`ReadableStreamInterface` yourself is only worth it when the data arrives in
-chunks of its own, such as a paged HTTP response.
+The pathname is the only thing a `VirtualSource` adds; reading, seeking and
+the size all come from the source it wraps, so a string, an open resource or a
+real file all work as the thing underneath.
+
+Implementing `ReadableInterface` by hand is only worth it when the data
+arrives in chunks of its own, such as a paged HTTP response - then the cursor
+is yours to drive, and `$offset`, `$isEof` and `read()` are what the rest of
+phplrt will call.
