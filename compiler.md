@@ -56,7 +56,16 @@ Now production never sees the compiler at all:
 $parser = new App\Language\LanguageParser();
 ```
 
-[Code Generation](/docs/compiler/generation) covers this in full.
+[Code Generation](/docs/compiler/generation) covers this in full, and the same
+thing without a script of your own is one command:
+
+```bash
+php vendor/bin/phplrt compile resources/grammar.pp3 \ 
+    src/Parser.php \ 
+    --class Parser
+```
+
+[Command Line](/docs/compiler/cli) covers the binary.
 
 ## Grammar Formats
 
@@ -182,3 +191,7 @@ The kinds you are likely to meet:
 - [PHP in a Grammar](/docs/compiler/code) - reducers and the variables they get.
 - [Code Generation](/docs/compiler/generation) - namespaces, class names, and
   what the output looks like.
+- [Command Line](/docs/compiler/cli) - checking and compiling a grammar with
+  `vendor/bin/phplrt`.
+- [Automation](/docs/compiler/automation) - composer scripts and CI jobs that
+  keep the grammar and the generated parser in step.

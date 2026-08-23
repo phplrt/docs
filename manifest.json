@@ -14,7 +14,9 @@
         "PP3 Grammar Syntax": "compiler/grammar",
         "PP2 Grammar Syntax (Legacy)": "compiler/legacy-grammar",
         "PHP in a Grammar": "compiler/code",
-        "Code Generation": "compiler/generation"
+        "Code Generation": "compiler/generation",
+        "Command Line": "compiler/cli",
+        "Automation": "compiler/automation"
     },
     "Lexer": {
         "Usage": "lexer",

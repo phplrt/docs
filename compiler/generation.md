@@ -195,43 +195,10 @@ $code = (string) new Compiler()
 // write it into a phar, whatever you need
 ```
 
-A handy trick for CI - fail the build if the committed parser is stale:
-
-```php
-$expected = (string) $output;
-$actual = \file_get_contents(__DIR__ . '/LanguageParser.php');
-
-if ($expected !== $actual) {
-    throw new \RuntimeException('Parser is out of date, run "composer build-parser"');
-}
-```
-
-## Fitting It Into A Project
-
-The usual layout:
-
-```
-resources/grammar/
-    grammar.pp3
-    lexemes.pp3
-src/Parser/
-    LanguageParser.php   <- generated, committed
-bin/
-    build-parser.php     <- runs the generator
-```
-
-```json
-{
-    "scripts": {
-        "build-parser": "php bin/build-parser.php"
-    }
-}
-```
-
-Run it whenever the grammar changes, and commit the result. Two reasons to
-commit rather than generate on deploy: the file is what static analysis and
-your IDE actually see, and a broken grammar fails in a pull request instead of
-in production.
+That is how the build is kept honest: generate into a string, compare it with
+the committed file, and fail if the two have drifted apart.
+[Automation](/docs/compiler/automation) has the project layout, the composer
+scripts and the CI jobs that do it.
 
 ## When Not To Generate
 
