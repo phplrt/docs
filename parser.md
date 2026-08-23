@@ -335,3 +335,5 @@ while ($parser->analyze($input, Mode::SyntaxCheck) instanceof PartialResult) {
   one does.
 - [Building a Grammar](/docs/parser/builder) - describing rules in PHP.
 - [Results and Reducers](/docs/parser/ast) - turning a parse into an AST.
+- [Contracts](/docs/parser/contracts) - `phplrt/parser-contracts`, for code
+  that needs a parser without needing this one.

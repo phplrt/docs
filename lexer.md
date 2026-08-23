@@ -250,3 +250,5 @@ generated from a config file, a database, a plugin system.
   captures.
 - [Nested Lexers](/docs/lexer/embedding) - string interpolation, PHP inside
   HTML and other "a different language starts here" situations.
+- [Contracts](/docs/lexer/contracts) - `phplrt/lexer-contracts`, for code that
+  needs a lexer without needing this one.

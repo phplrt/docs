@@ -132,3 +132,6 @@ function report(PositionFactoryInterface $factory, FileInterface $source, int $o
 `PositionInterface` guarantees the one-based counting described above, and
 `PositionInterface::MIN_LINE` and `PositionInterface::MIN_COLUMN` are what
 "the beginning" is spelled as.
+
+Both interfaces live in packages of their own, described in
+[Contracts](/docs/position/contracts).

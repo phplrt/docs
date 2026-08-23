@@ -21,19 +21,23 @@
     "Lexer": {
         "Usage": "lexer",
         "Tokens and Channels": "lexer/tokens",
-        "Nested Lexers": "lexer/embedding"
+        "Nested Lexers": "lexer/embedding",
+        "Contracts": "lexer/contracts"
     },
     "Parser": {
         "Usage": "parser",
         "Grammar Rules": "parser/rules",
         "Building a Grammar": "parser/builder",
-        "Results and Reducers": "parser/ast"
+        "Results and Reducers": "parser/ast",
+        "Contracts": "parser/contracts"
     },
     "Source": {
-        "Usage": "source"
+        "Usage": "source",
+        "Contracts": "source/contracts"
     },
     "Position": {
-        "Usage": "position"
+        "Usage": "position",
+        "Contracts": "position/contracts"
     },
     "Errors": {
         "Error Reporting": "errors"
