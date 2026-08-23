@@ -217,17 +217,16 @@ function report(FileInterface $source): string
 `ReadableInterface` gives you the data of the source and a cursor over it:
 
 ```php
-$source->content;    // string   - what is left from where the cursor is
-$source->size;       // int|null - null when it cannot be known in advance
-$source->offset;     // int      - where the next read starts
-$source->isSeekable; // bool     - whether the cursor can be moved at will
-$source->isEof;      // bool     - whether there is nothing left to read
+$source->content;    // string - what is left from where the cursor is
+$source->offset;     // int    - where the next read starts
+$source->isSeekable; // bool   - whether the cursor can be moved at will
+$source->isEof;      // bool   - whether there is nothing left to read
 $source->read(4096); // string
 ```
 
-`$size` is there so that nobody has to read a source out just to find out how
-long it is: a file answers with `filesize()`, a string with `strlen()`, and a
-source over a pipe answers `null`, because a pipe has no size until it ends.
+How long a source is is not among them: a pipe has no length until it ends, so
+the question only has an answer for some of the sources and is asked of those
+alone - `FileSource::$size` answers it with `filesize()`.
 
 All of them may throw `SourceExceptionInterface` - a file can disappear between
 the moment you name it and the moment you read it.
@@ -351,9 +350,9 @@ final class TemplateSources
 }
 ```
 
-The pathname is the only thing a `VirtualSource` adds; reading, seeking and
-the size all come from the source it wraps, so a string, an open resource or a
-real file all work as the thing underneath.
+The pathname is the only thing a `VirtualSource` adds; reading and seeking both
+come from the source it wraps, so a string, an open resource or a real file all
+work as the thing underneath.
 
 Implementing `ReadableInterface` by hand is only worth it when the data
 arrives in chunks of its own, such as a paged HTTP response - then the cursor
