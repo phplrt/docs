@@ -71,29 +71,20 @@ new Position(0); // InvalidArgumentException
 ## What It Does To The Source
 
 Finding a line means counting the delimiters before it, and that means reading
-the source from its beginning. What the source is decides how that ends:
-
-| Source                              | After the call                        |
-|-------------------------------------|---------------------------------------|
-| one that can be rewound             | left exactly where it was             |
-| a pipe or a socket, still untouched | left at the end of what has been read |
-| a pipe or a socket, partly read     | `NotRewindableException`              |
+the source from its beginning. A source is readable in any order and any
+number of times, so nothing about it changes:
 
 ```php
-$source->read(5);
+echo $source->read(0, 5); // '2 + 2'
 
-echo $source->offset; // 5
 $factory->createFromOffset($source, 20);
-echo $source->offset; // 5 - the cursor has been given back
+
+echo $source->read(0, 5); // '2 + 2' again
 ```
 
-A source that cannot be rewound and has already given a part of its data away
-is refused, because the bytes needed to count the lines are simply gone:
-
-```
-The source does not support offset (seek/rewind) changes and
-has already given away its first 2 bytes
-```
+A pipe and a socket are read this way as well: everything such a source has
+given away is kept, so counting the lines of one costs the memory of the data
+that has been counted.
 
 ## Reading In Chunks
 
@@ -120,7 +111,6 @@ along with the failures of the source it reads.
 | Exception                  | Thrown when                                             |
 |----------------------------|---------------------------------------------------------|
 | `InvalidArgumentException` | a line, a column or a chunk size is below its minimum    |
-| `NotRewindableException`   | the source cannot be rewound and has already been read   |
 
 ## Bring Your Own
 
