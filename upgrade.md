@@ -2,17 +2,16 @@
 
 ## Upgrading To 4.0 From 3.x
 
-Version 4.0 is a rewrite. Almost every public API changed, so this is a
-porting guide rather than a list of renames. The good news: the grammar
-files mostly survive, and that is where the bulk of the work usually lives.
+Version 4.0 is a rewrite, so this is a porting guide rather than a list of
+renames. The grammar files mostly survive, and that is where the bulk of the
+work usually lives.
 
 ### PHP 8.4 Required
 
 > Likelihood Of Impact: **High**
 
-Phplrt 4.0 requires PHP 8.4. The API uses property hooks, asymmetric
-visibility and `new` in initializers throughout - which is also why so much
-of it looks different.
+The API uses property hooks, asymmetric visibility and `new` in initializers
+throughout - which is also why so much of it looks different.
 
 ### Getters Became Properties
 
@@ -59,28 +58,6 @@ if ($token->id === MyParser::T_DIGIT) { /* ... */ }
 [Generated parsers](/docs/compiler/generation) expose the ids as class
 constants, so you do not have to track the numbers yourself.
 
-### Channels Replaced "Skipped Tokens"
-
-> Likelihood Of Impact: **Medium**
-
-The lexer no longer takes a list of names to skip. Every token now carries a
-[channel](/docs/lexer/tokens), and the lexer reports every channel except the
-ones it is told to leave out - `Hidden` alone, unless you say otherwise.
-
-```php
-// 3.x
-$lexer = new Lexer($tokens, ['T_WHITESPACE']);
-
-// 4.x
-$builder->addPattern('\s++', 'T_WHITESPACE')
-    ->hide();
-```
-
-Unlike a skipped name, a channel is a decision you can revisit: the same token
-description gives you a lexer reporting the whitespace and the comments when
-you need to look at them, and custom channels let you keep a token in the
-stream and still tell it apart from the code.
-
 ### The Lexer Is Built, Not Configured
 
 > Likelihood Of Impact: **High**
@@ -107,10 +84,25 @@ $lexer = $builder->build()
     ->toLexer();
 ```
 
-The `append()`, `prepend()`, `prependMany()` and `skip()` methods are gone;
-`addPattern()`, `addValue()` and `hide()` cover the same ground. Building is
-also where patterns are validated, so a broken regex is reported with the
-token that owns it instead of failing at match time.
+`append()`, `prepend()`, `prependMany()` and `skip()` are gone; `addPattern()`,
+`addValue()` and `hide()` cover the same ground.
+
+### Channels Replaced "Skipped Tokens"
+
+> Likelihood Of Impact: **Medium**
+
+The lexer no longer takes a list of names to skip. Every token carries a
+[channel](/docs/lexer/tokens), and the lexer reports every channel except the
+ones it is told to leave out - `Hidden` alone, unless you say otherwise.
+
+```php
+// 3.x
+$lexer = new Lexer($tokens, ['T_WHITESPACE']);
+
+// 4.x
+$builder->addPattern('\s++', 'T_WHITESPACE')
+    ->hide();
+```
 
 ### The Parser Takes Explicit Arguments
 
@@ -138,59 +130,11 @@ Rules are keyed by **integers** rather than by name, and they refer to each
 other by index. In practice you do not write this array by hand - see
 [the parser builder](/docs/parser/builder).
 
-### Checking And Trailing Tokens Became One Method
-
-> Likelihood Of Impact: **Medium**
-
-3.x answered "is this valid?" with `check()`, and read a source the grammar
-does not describe in full through a setting, picking up where it stopped from
-the parser afterwards. Both are `analyze()` now, and it returns what it found
-rather than keeping it:
-
-```php
-// 3.x
-$parser->check($source); // true or false
-
-$parser = new Parser(..., [Parser::CONFIG_ALLOW_TRAILING_TOKENS => true]);
-$parser->parse($source);
-
-$context = $parser->getLastExecutionContext();
-$context->buffer->current(); // where the parser stopped
-
-// 4.x
-use Phplrt\Parser\Analysis\Mode;
-use Phplrt\Parser\Analysis\Result\PartialResult;
-use Phplrt\Parser\Analysis\Result\SuccessfulResult;
-
-$result = $parser->analyze($source, Mode::SyntaxCheck);
-
-$result instanceof SuccessfulResult; // the grammar has read something
-$result instanceof PartialResult;    // ...and there is more to read
-
-$result = $parser->analyze($source);
-
-$result->value; // what has been read reduced to
-
-// A source read in full has nothing more to say, so these belong to the two
-// results that mean it has not been
-$result->token;      // where the parser stopped
-$result->error;      // and the exception it would be rejected with
-```
-
-Two things changed beyond the names. Nothing is kept on the parser between
-calls, so a parser is safe to share and to call from several places at once.
-And where the reading stopped is now told for every source, not only for the
-ones that fail: a valid source is a `SuccessfulResult`, a source the grammar
-reads in part is a `PartialResult`, and one it cannot read at all is a
-`FailureResult`.
-
-See [Analysing A Source](/docs/parser#analysing-a-source).
-
 ### BuilderInterface Became Per-Rule Reducers
 
 > Likelihood Of Impact: **High**
 
-The single AST builder with a `switch` overrule names is gone. Each rule now
+The single AST builder with a `switch` over rule names is gone. Each rule now
 carries its own reducer.
 
 ```php
@@ -215,86 +159,62 @@ Sum    -> { return new \SumNode($children); }
     : Number() ::T_PLUS:: Number() ;
 ```
 
-```php
-// 4.x - or through the builder
-$number->setReducer(static fn(Context $ctx, mixed $children): NumberNode
-    => new NumberNode($children)
-);
-```
+The signature is still `callable(Context $ctx, mixed $children): mixed`, but
+`$ctx->getState()` is now `$ctx->rule` and holds an integer. Returning `null`
+still means "leave the children alone".
 
-The reducer signature is `callable(Context $ctx, mixed $children): mixed`,
-same as before, but `$ctx->getState()` is now `$ctx->rule` and holds an
-integer.
-
-Returning `null` still means "leave the children alone".
-
-### Grammar Rule Classes
+### `check()` And Trailing Tokens Became `analyze()`
 
 > Likelihood Of Impact: **Medium**
 
-The rules moved from `Phplrt\Parser\Grammar` (3.2) - same namespace, but they
-are now `readonly` value objects that reference other rules by **integer id**,
-and `Lexeme` takes a token id instead of a name.
+3.x answered "is this valid?" with `check()`, and read a source the grammar
+does not describe in full through a setting, picking up where it stopped from
+the parser afterwards. Both are `analyze()` now:
 
 ```php
 // 3.x
-new Lexeme('T_DIGIT');
-new Lexeme('T_WHITESPACE', false);
-new Repetition($ruleId, 0, \INF);
+$parser->check($source); // true or false
+$context = $parser->getLastExecutionContext();
 
 // 4.x
-new Lexeme(MyLexer::T_DIGIT);
-new Lexeme(MyLexer::T_WHITESPACE, false);
-new Repetition($ruleId, 0, \INF);
+use Phplrt\Parser\Analysis\Mode;
+
+$result = $parser->analyze($source, Mode::SyntaxCheck);
+
+$result->value; // what has been read reduced to
+$result->token; // where the parser stopped
+$result->error; // and the exception it would be rejected with
 ```
 
-`reduce()` is gone from the rule classes: matching is done by the parser's
-internal tracer, and the rules are pure data. This is what made the up-front
-analysis and code generation possible.
+How far the grammar got is the class of the result: `SuccessfulResult`,
+`PartialResult` or `FailureResult`. Nothing is kept on the parser between
+calls, so `getLastExecutionContext()` has no replacement.
 
-### The Buffer Package Is Gone
+See [Analysing A Source](/docs/parser#analysing-a-source).
 
-> Likelihood Of Impact: **Low**
-
-`phplrt/buffer` was merged into `phplrt/parser` as an internal detail
-(`Phplrt\Parser\Internal\Buffer`). The parser no longer exposes a buffer, and
-you do not choose one.
-
-### Positions Are Calculated By A Factory
+### A Source Is Read By Offset
 
 > Likelihood Of Impact: **Medium**
 
-`phplrt/position` is still there, with a smaller API. A `Position` is now the
-line and the column alone, and the offset it was built from is not a part of
-it. Getters became properties, and the way back is a method of the factory
-rather than of the position.
+3.x gave you the source in one piece and nothing smaller. 4.x keeps the whole
+in `$content` and adds `read()`, which names the fragment it wants:
 
 ```php
 // 3.x
-$position = $factory->createFromOffset($source, 42);
-$line = $position->getLine();
-$column = $position->getColumn();
-$offset = $position->getOffset();
+$whole = $source->getContents();
+$part = \fread($source->getStream(), 4);
 
 // 4.x
-$position = $factory->createFromOffset($source, 42);
-$line = $position->line;
-$column = $position->column;
-// $offset was already known before the call: 42 
+$whole = $source->content;
+$part = $source->read(0, 4);
 ```
 
-`createAtStarting()` is spelled `new Position()`, and `createAtEnding()` is an
-offset past the end of the source, which is corrected to the end of it.
-`Interval`, `IntervalFactoryTrait` and `PositionFactoryTrait` are gone.
+`read()` takes an absolute offset, and reading a source leaves it as it is.
+`getStream()` has no replacement - build a `ResourceSource` over a resource of
+your own where you need one.
 
-See [Position](/docs/position).
-
-### Sources Are Constructed Directly
-
-> Likelihood Of Impact: **Medium**
-
-The static factory methods on `File` still work, but are deprecated and will
-be removed in 5.0.
+Sources are also constructed directly now. The static factory methods on
+`File` still work, but are deprecated:
 
 ```php
 // 3.x
@@ -308,28 +228,23 @@ VirtualSource::createFromString('x.txt', '2 + 2'); // a string with a name
 ```
 
 `SourceFactory::createDefault()` is there if you need the "figure out what this
-is" behaviour. Note that it now has a single `create()` method: the
-`createFromString()`, `createFromFile()` and `createFromStream()` helpers are
-gone, and each kind of source is a driver behind that one method instead.
+is" behaviour, now behind a single `create()` method.
 
-### Code Generation Is Back
+See [Source](/docs/source).
 
-> Likelihood Of Impact: **Low**
+### Positions Are Calculated By A Factory
 
-3.0 removed generation of a full PHP class in favour of a config array. 4.0
-brings the class back, and it now includes the lexer, the token constants and
-the reducers as real methods:
+> Likelihood Of Impact: **Medium**
 
-```php
-new Compiler()
-    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
-    ->generate()
-        ->withNamespaceName('App\Parser')
-        ->withClassName('LanguageParser')
-        ->save(__DIR__ . '/LanguageParser.php');
-```
+`phplrt/position` is still there, with a smaller API. A `Position` is the line
+and the column alone - the offset it was built from is not a part of it, and
+`createFromOffset()` already knows it.
 
-See [Code Generation](/docs/compiler/generation).
+`createAtStarting()` is spelled `new Position()`, `createAtEnding()` is an
+offset past the end of the source, and `Interval`, `IntervalFactoryTrait` and
+`PositionFactoryTrait` are gone.
+
+See [Position](/docs/position).
 
 ### The `.pp` Format Is No Longer Read
 
@@ -337,10 +252,8 @@ See [Code Generation](/docs/compiler/generation).
 
 Grammars written in the original Hoa-style `.pp` format are not supported.
 A `.pp` file is still recognized by its extension, so you get a clear error
-rather than a confusing parse failure.
-
-Rewrite the grammar in one of the formats that are read - see
-[Grammar Syntax](/docs/compiler/grammar).
+rather than a confusing parse failure. Rewrite the grammar in one of the
+formats that are read - see [Grammar Syntax](/docs/compiler/grammar).
 
 ### Grammar Files: What To Check
 
@@ -349,16 +262,16 @@ Rewrite the grammar in one of the formats that are read - see
 A grammar file keeps its extension and keeps being read the way it was, so most
 of them compile unchanged. What no longer works:
 
-**The old pragmas are no longer supported.** Unification and the error levels
-are gone; the corresponding behaviour is either the default now or is
-configured in PHP. Which settings a grammar may carry is listed under
+**The old pragmas.** Unification and the error levels are gone; the
+corresponding behaviour is either the default now or is configured in PHP.
+Which settings a grammar may carry is listed under
 [Settings](/docs/compiler/grammar).
 
-**`$file` and `$state` are no longer declared in a reducer.** Use `$source` and
-`$rule`, which is an `int`. See [PHP in a Grammar](/docs/compiler/code).
+**`$file` and `$state` in a reducer.** Use `$source` and `$rule`, which is an
+`int`. See [PHP in a Grammar](/docs/compiler/code).
 
-**Left recursion is now rejected at build time.** It never worked at runtime
-either, but 3.x would let you compile it. Rewrite as a repetition:
+**Left recursion**, which is now rejected at build time. It never worked at
+runtime either, but 3.x would let you compile it. Rewrite as a repetition:
 
 ```pp3
 // ✘ rejected
@@ -374,3 +287,20 @@ If a rule of yours legitimately produces `null`, wrap it.
 **Reducers returning arrays** are flattened into the rule above. If you
 relied on nesting, return an object instead. See
 [Results and Reducers](/docs/parser/ast).
+
+### Everything Else That Is Gone
+
+> Likelihood Of Impact: **Low**
+
+| 3.x                                    | 4.x                                        |
+|----------------------------------------|--------------------------------------------|
+| `phplrt/buffer`                        | internal to `phplrt/parser`                |
+| `ReadableInterface::getHash()`         | nothing - hash `$content` yourself         |
+| `File::fromPsrStream()`                | a `SourceDriverInterface` of your own      |
+| `SourceProviderInterface`              | `SourceDriverInterface`, given to the ctor |
+| `Rule::reduce()`                       | nothing - rules are pure data              |
+| `new Lexeme('T_DIGIT')`                | `new Lexeme(MyLexer::T_DIGIT)`             |
+
+Code generation, dropped in 3.0 in favour of a config array, is back and now
+emits the lexer, the token constants and the reducers as a real class - see
+[Code Generation](/docs/compiler/generation).
