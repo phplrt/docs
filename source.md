@@ -35,8 +35,8 @@ is gone.
 
 ## The Kinds of Source
 
-Every source is named after what it reads, and every one of them is a cursor
-over its own data as well.
+Every source is named after what it reads, and every one of them can be read
+in any order and any number of times.
 
 | Class            | Reads                            |
 |------------------|----------------------------------|
@@ -214,14 +214,11 @@ function report(FileInterface $source): string
 }
 ```
 
-`ReadableInterface` gives you the data of the source and a cursor over it:
+`ReadableInterface` is the whole of the source and any fragment of it:
 
 ```php
-$source->content;    // string - what is left from where the cursor is
-$source->offset;     // int    - where the next read starts
-$source->isSeekable; // bool   - whether the cursor can be moved at will
-$source->isEof;      // bool   - whether there is nothing left to read
-$source->read(4096); // string
+$source->content;      // string - the whole source
+$source->read(0, 4096) // string - at most 4096 bytes located at offset 0
 ```
 
 How long a source is is not among them: a pipe has no length until it ends, so
@@ -246,66 +243,62 @@ try {
 ### Reading In Chunks
 
 `$content` gives you everything at once, which is fine until the source is
-larger than the memory you are willing to spend on it. Every source is also a
-cursor over its own data:
+larger than the memory you are willing to spend on it. `read()` takes the
+fragment you name and nothing else:
 
 ```php
-while (!$source->isEof) {
-    $chunk = $source->read(4096);
+for ($offset = 0;; $offset += \strlen($chunk)) {
+    $chunk = $source->read($offset, 4096);
+
+    if ($chunk === '') {
+        break;
+    }
 
     // ...
 }
 ```
 
-`read()` returns up to the number of bytes you asked for, and an empty string
-once there is nothing left; `$isEof` is what tells you the data is over, and
-`$offset` is where you are in it. Unlike `feof()`, `$isEof` is true as soon as
-there is nothing more to read, so the loop above never spins an extra time.
+`read()` returns up to the number of bytes you asked for and an empty string
+once the offset is at the end of the source, which is what tells you the data
+is over.
 
-`$content` is what is left of the source from where the cursor is, and taking
-it does not move the cursor:
+### Reading Twice
+
+Reading a source leaves it as it is, so any fragment can be taken out of it
+again, in any order:
 
 ```php
 $source = StringSource::createFromString('2 + 2');
 
-$source->read(2); // '2 '
-$source->content; // '+ 2'
-$source->content; // '+ 2' again
-$source->offset;  // 2
+$source->read(0, 2); // '2 '
+$source->read(2, 3); // '+ 2'
+$source->read(0, 2); // '2 ' again
+$source->content;    // '2 + 2' - the whole of it, whatever has been read
 ```
 
-### Going Back
-
-`$offset` can be written to as well as read, which moves the cursor to an
-arbitrary position:
-
-```php
-$source->offset = 42;
-
-echo $source->read(8); // the eight bytes at offset 42
-```
-
-A string and a file can always be moved; a pipe, a socket and `php://input`
-cannot, and answer `false` to `$isSeekable`:
-
-```php
-if ($source->isSeekable) {
-    $source->offset = 0;
-}
-```
-
-Moving a source that answers `false` throws `LogicException`. Whether a source
-can be moved depends on what it is built over rather than on its class, which
-is why this is a property and not a separate interface.
-
-A source over a resource you cannot rewind is readable **once**: a second
-`$content` read throws instead of quietly handing you what is left.
+This holds for a pipe, a socket and `php://input` as well, none of which can
+be rewound: such a source keeps everything it has given away, so the memory it
+costs is the memory of the data that has been read out of it.
 
 ```php
 $input = ResourceSource::createFromResource(\fopen('php://input', 'rb'));
 
 $input->content; // reads the input
-$input->content; // NotReadableException
+$input->content; // the very same data
+```
+
+A source built over a resource begins where the resource has been left at the
+moment it has been given away, so a resource that has already been read in
+part is the source of what is left in it:
+
+```php
+$stream = \fopen('/app/x.txt', 'rb'); // "2 + 2"
+\fseek($stream, 2);
+
+$source = ResourceSource::createFromResource($stream);
+
+$source->content;    // '+ 2'
+$source->read(0, 1); // '+'
 ```
 
 ### Who Closes The Resource
@@ -350,11 +343,11 @@ final class TemplateSources
 }
 ```
 
-The pathname is the only thing a `VirtualSource` adds; reading and seeking both
-come from the source it wraps, so a string, an open resource or a real file all
+The pathname is the only thing a `VirtualSource` adds; everything read comes
+from the source it wraps, so a string, an open resource or a real file all
 work as the thing underneath.
 
 Implementing `ReadableInterface` by hand is only worth it when the data
-arrives in chunks of its own, such as a paged HTTP response - then the cursor
-is yours to drive, and `$offset`, `$isEof` and `read()` are what the rest of
-phplrt will call.
+arrives in chunks of its own, such as a paged HTTP response - `$content` and
+`read()` are what the rest of phplrt will call, and holding on to the pages
+that have already arrived is what makes them answerable twice.
