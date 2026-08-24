@@ -91,6 +91,40 @@ is the one channel a lexer leaves out by default - see
 [Tokens and Channels](/docs/basics/tokens) for the general case, including how
 to have the hidden tokens reported after all.
 
+## Naming A Piece Of A Pattern
+
+A piece of a pattern that keeps coming back is named once and referred to by
+`(?&NAME)`:
+
+```php
+$builder->addFragment('DIGIT', '[0-9]');
+$builder->addFragment('EXP', '[eE][+-]?(?&DIGIT)++');
+
+$builder->addPattern('(?&DIGIT)++(\.(?&DIGIT)++)?(?&EXP)?', 'T_NUMBER');
+```
+
+The pieces are written into the patterns while the lexer is built, so what it
+compiles is what they spell out:
+
+```
+(?:[0-9])++(\.(?:[0-9])++)?(?:[eE][+-]?(?:[0-9])++)?
+```
+
+A fragment recognizes nothing on its own and becomes no token. It is written
+in as a group of its own, so a quantifier after `(?&NAME)` counts the whole
+piece; it may be written of another fragment, but not of itself; and it
+reaches the patterns of every [nested lexer](/docs/advanced/embedding), in
+whatever order it is added.
+
+A name that no fragment is added under is left alone in case the pattern
+captures a subpattern under it - which is what `(?&NAME)` means to PCRE - and
+is reported otherwise:
+
+```php
+$builder->addPattern('\((?<in>[^()]|(?&in))*+\)', 'T_NESTED'); // ✔ left alone
+$builder->addPattern('(?&DIGT)++', 'T_NUMBER');               // ✘ reported
+```
+
 ## Regex Modifiers
 
 By default, patterns are compiled with `S`, `u`, `s` and `m`. Add or remove
@@ -219,7 +253,9 @@ $builder->addAnalysisPass(
 Everything above has a shorter spelling in a `.pp3` file:
 
 ```pp3
-%token T_DIGIT       \d++
+%fragment DIGIT      [0-9]
+
+%token T_DIGIT       (?&DIGIT)++
 %token T_PLUS        \+
 %skip  T_WHITESPACE  \s++
 ```

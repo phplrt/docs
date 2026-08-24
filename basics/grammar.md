@@ -100,6 +100,90 @@ error[UnexpectedTokenException]: Syntax error, unexpected "->" (T_PATTERN)
   |                    ^^
 ```
 
+## Naming A Piece Of An Expression
+
+The same piece of a pattern tends to be written over and over - a digit, an
+identifier, an escape sequence. `%fragment` names it once, and `(?&NAME)`
+writes it wherever it belongs:
+
+```pp3
+%fragment DIGIT  [0-9]
+%fragment EXP    [eE][+-]?(?&DIGIT)++
+
+%token T_NUMBER  (?&DIGIT)++(\.(?&DIGIT)++)?(?&EXP)?
+```
+
+The compiled token is what the pieces spell out, so nothing of this reaches
+the lexer:
+
+```
+(?:[0-9])++(\.(?:[0-9])++)?(?:[eE][+-]?(?:[0-9])++)?
+```
+
+A piece is written in as a group of its own, so a quantifier after `(?&NAME)`
+counts the whole piece rather than its last character.
+
+**A fragment is no token.** It recognizes nothing, appears in no stream and is
+referred to by no rule - it is a piece of an expression and nothing else. A
+grammar declaring nothing but fragments declares no tokens at all.
+
+**A fragment belongs to the whole lexer**, so a piece declared once is written
+into the expressions of every [state](#statex-and-exit) and of every token
+[belonging to every state](#tokens-belonging-to-every-state):
+
+```pp3
+%fragment WORD  [a-z]++
+
+%token        T_QUOTE_OPEN   "  -> state(string)
+%token string:T_TEXT         (?&WORD)     // ✔ written in here as well
+%token string:T_QUOTE_CLOSE  "  -> exit()
+```
+
+Which also means a fragment is declared with no state of its own, and does
+nothing to the reading - either of them is an error:
+
+```pp3
+%fragment string:WORD  [a-z]++  // ✘ a fragment belongs to no state
+%fragment WORD  [a-z]++ -> exit()  // ✘ a fragment does nothing
+```
+
+**Order does not matter.** Unlike a token, a fragment is written in once the
+whole grammar has been read, so it may be declared after what refers to it and
+in another `%include`d file:
+
+```pp3
+%token T_NUMBER  (?&DIGIT)++
+%fragment DIGIT  [0-9]          // ✔
+```
+
+A name that no fragment is declared under is reported at the token that refers
+to it, which is what a misspelled piece looks like:
+
+```
+error[CompilationFailedException]: The /(?&DIGT)++/ (T_NUMBER) expression refers to
+the "DIGT" fragment, which has not been declared
+ --> /app/grammar.pp3:3:1
+3 | %token T_NUMBER  (?&DIGT)++
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+```
+
+So is a piece written of itself, whether directly or through another one:
+
+```pp3
+%fragment A  (?&B)
+%fragment B  (?&A)   // ✘ written of itself
+```
+
+A fragment may be written of another fragment, though, as `EXP` is above.
+
+**`(?&NAME)` is PCRE's own spelling** for calling a subpattern, and an
+expression capturing a subpattern under that name keeps it - the call is left
+alone rather than being taken for a fragment:
+
+```pp3
+%token T_NESTED  \((?<in>[^()]|(?&in))*+\)   // ✔ reads itself, no fragment involved
+```
+
 ## Token Actions
 
 A declaration may end with `->` and say what the token *does* besides being
@@ -492,9 +576,13 @@ This has a page of its own: [PHP in a Grammar](/docs/basics/grammar-php).
 Nothing is enforced, but the usual style makes grammars much easier to read:
 
 ```pp3
-%token T_NUMBER  \d++    // tokens: T_SCREAMING_CASE
-Expression : ... ;       // rules:  PascalCase
+%fragment DIGIT  [0-9]   // fragments: SCREAMING_CASE, no prefix
+%token T_NUMBER  \d++    // tokens:    T_SCREAMING_CASE
+Expression : ... ;       // rules:     PascalCase
 ```
+
+A fragment without the `T_` prefix reads as what it is at the place it is
+referred to: `(?&DIGIT)` is a piece of a pattern, `<T_DIGIT>` is a token.
 
 ## A Fuller Example
 

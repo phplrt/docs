@@ -217,6 +217,11 @@ The priorities, in the order they run:
 | `PASS_PRIORITY_OPTIMIZE`             | Rewrite it, keeping the meaning            |
 | `PASS_PRIORITY_CHECK_AFTER_OPTIMIZE` | Catch an optimization that broke it        |
 
+`LexerBuilder` runs the same four. Normalizing is where what a token
+definition refers to is written into it, so a
+[named piece of a pattern](/docs/advanced/lexer#naming-a-piece-of-a-pattern) is
+already expanded by the time anything checks the pattern it belongs to.
+
 A built-in pass can be dropped by name, which is how you opt out of an
 optimization that does not suit your grammar:
 
