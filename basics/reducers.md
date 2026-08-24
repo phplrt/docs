@@ -194,10 +194,9 @@ analysis is:
 
 ```php
 static function (Context $ctx, mixed $children): mixed {
-    $ctx->rule;    // int - the id of the rule being reduced
-    $ctx->token;   // the last token this rule read, or null
-    $ctx->source;  // the source being parsed
-    $ctx->content; // its content, already read
+    $ctx->rule;   // int - the id of the rule being reduced
+    $ctx->token;  // the last token this rule read, or null
+    $ctx->source; // the source being parsed
 
     return null;
 }

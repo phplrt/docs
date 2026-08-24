@@ -53,7 +53,7 @@ Inside a code block, these are available:
 | `$token`    | The last token the rule read, or `null`                |
 | `$offset`   | Where that token starts, in bytes                      |
 | `$source`   | The source being parsed                                |
-| `$content`  | Its contents, already read                             |
+| `$content`  | The whole content of that source                       |
 | `$rule`     | The id of the rule being reduced                       |
 
 All except `$children` and `$ctx` are shorthands the compiler expands for
