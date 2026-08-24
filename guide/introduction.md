@@ -185,7 +185,7 @@ composer require phplrt/exception
 
 ## What's Next?
 
-- [Quick Start](/docs/start/quick-start) - build a small language end to end.
+- [Quick Start](/docs/guide/quick-start) - build a small language end to end.
 - [PP3 Grammar Syntax](/docs/basics/grammar) - everything a `.pp3` file can say.
 - [Lexer](/docs/advanced/lexer) - tokens, channels and nested lexers.
 - [Parser](/docs/advanced/parser) - rules, reducers and the result they build.

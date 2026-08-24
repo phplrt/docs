@@ -4,9 +4,9 @@
         "Contribution Guide": "contributions"
     },
     "Getting Started": {
-        "Introduction": "start/introduction",
-        "Installation": "start/installation",
-        "Quick Start": "start/quick-start"
+        "Introduction": "guide/introduction",
+        "Installation": "guide/installation",
+        "Quick Start": "guide/quick-start"
     },
     "The Basics": {
         "PP3 Grammar": "basics/grammar",

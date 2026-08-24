@@ -35,7 +35,7 @@ $parser = new Compiler()
     ->getParser();
 ```
 
-[Quick Start](/docs/start/quick-start) walks through that from the beginning.
+[Quick Start](/docs/guide/quick-start) walks through that from the beginning.
 
 > **25+ more grammars.** [phplrt/grammars](https://github.com/phplrt/grammars)
 > collects ready to read grammars for real languages - JSON5, TSV, semantic
