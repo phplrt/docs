@@ -32,7 +32,7 @@ first. See [Analysing A Source](#analysing-a-source) below.
 ## Where Parsers Come From
 
 You will rarely write one by hand. Normally you either
-[compile a grammar file](/docs/compiler):
+[compile a grammar file](/docs/basics/compiler):
 
 ```php
 $parser = new Compiler()
@@ -40,7 +40,7 @@ $parser = new Compiler()
     ->getParser();
 ```
 
-or [generate the code once](/docs/compiler/generation) and use the class:
+or [generate the code once](/docs/basics/generation) and use the class:
 
 ```php
 $parser = new App\Calculator\CalculatorParser();
@@ -88,9 +88,9 @@ This is exactly what the compiler generates for you - it just also works out
 what can be told about the grammar ahead of time, which makes it considerably
 faster.
 
-The rule classes are described in [Grammar Rules](/docs/parser/rules), and
+The rule classes are described in [Grammar Rules](/docs/advanced/rules), and
 the friendlier way to produce this array is
-[the parser builder](/docs/parser/builder).
+[the parser builder](/docs/advanced/builder).
 
 ## How It Reads
 
@@ -216,7 +216,7 @@ point at the start of the outermost rule. This usually lands where you expect,
 but it can surprise you: an alternative that got further into the input before
 failing wins the report, even if a different alternative was the intended one.
 
-See [Error Reporting](/docs/errors) for the full picture.
+See [Error Reporting](/docs/basics/errors) for the full picture.
 
 ## Input Must Be Consumed Entirely
 
@@ -334,9 +334,9 @@ while ($parser->analyze($input, Mode::SyntaxCheck) instanceof PartialResult) {
 
 ## What's Next?
 
-- [Grammar Rules](/docs/parser/rules) - the five rule types and what each
+- [Grammar Rules](/docs/advanced/rules) - the five rule types and what each
   one does.
-- [Building a Grammar](/docs/parser/builder) - describing rules in PHP.
-- [Results and Reducers](/docs/parser/ast) - turning a parse into an AST.
-- [Contracts](/docs/parser/contracts) - `phplrt/parser-contracts`, for code
+- [Building a Grammar](/docs/advanced/builder) - describing rules in PHP.
+- [Results and Reducers](/docs/basics/reducers) - turning a parse into an AST.
+- [Contracts](/docs/contracts/parser) - `phplrt/parser-contracts`, for code
   that needs a parser without needing this one.

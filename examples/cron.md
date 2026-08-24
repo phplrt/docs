@@ -104,7 +104,7 @@ Step
 ## Usage
 
 Nothing needs building here - the question is only whether the expression is
-one, which is what [`analyze()`](/docs/parser#analysing-a-source) answers
+one, which is what [`analyze()`](/docs/advanced/parser#analysing-a-source) answers
 without running a single reducer:
 
 ```php

@@ -1,12 +1,12 @@
-# Compiler
+# Compiling a Grammar
 
 > This package is for development only:
 > `composer require phplrt/compiler --dev`
 
 The compiler reads a grammar file - the tokens, the rules, the reducers -
 and gives you back a working parser. It is the friendly front end to
-everything the [lexer builder](/docs/lexer) and
-[parser builder](/docs/parser/builder) can do.
+everything the [lexer builder](/docs/advanced/lexer) and
+[parser builder](/docs/advanced/builder) can do.
 
 ## Reading A Grammar
 
@@ -56,7 +56,7 @@ Now production never sees the compiler at all:
 $parser = new App\Language\LanguageParser();
 ```
 
-[Code Generation](/docs/compiler/generation) covers this in full, and the same
+[Code Generation](/docs/basics/generation) covers this in full, and the same
 thing without a script of your own is one command:
 
 ```bash
@@ -65,7 +65,7 @@ php vendor/bin/phplrt compile resources/grammar.pp3 \
     --class Parser
 ```
 
-[Command Line](/docs/compiler/cli) covers the binary.
+[Command Line](/docs/basics/cli) covers the binary.
 
 ## Grammar Formats
 
@@ -74,14 +74,14 @@ The format is decided by the file extension:
 | Extension | Format                                                                                    |
 |-----------|-------------------------------------------------------------------------------------------|
 | `.pp`     | The legacy [Hoa](https://github.com/hoaproject/Compiler) format - **no longer supported** |
-| `.pp2`    | The older format, described in [Legacy Grammar](/docs/compiler/legacy-grammar)            |
-| `.pp3`    | The current format, described in [Grammar](/docs/compiler/grammar)                        |
+| `.pp2`    | The older format, described in [PP2 Grammar Syntax](/docs/advanced/legacy-grammar)        |
+| `.pp3`    | The current format, described in [PP3 Grammar Syntax](/docs/basics/grammar)             |
 
 Write `.pp3` for anything new. A `.pp2` file keeps being read the way it always
 was, so an existing grammar needs no attention.
 
-A grammar that did not come from a file (a `StringSource`, a string) is read as the
-newest format, since there is no extension to go by:
+A grammar that did not come from a file (a `StringSource`, a string) is read as
+the newest format, since there is no extension to go by:
 
 ```php
 $compiler->load(StringSource::createFromString('%token T_DIGIT \d++  Num : <T_DIGIT> ;'));
@@ -183,13 +183,13 @@ The kinds you are likely to meet:
 
 ## What's Next?
 
-- [Grammar Syntax](/docs/compiler/grammar) - everything a `.pp3` file can say.
-- [Legacy Grammar Syntax](/docs/compiler/legacy-grammar) - everything a `.pp2`
+- [PP3 Grammar Syntax](/docs/basics/grammar) - everything a `.pp3` file can say.
+- [PP2 Grammar Syntax](/docs/advanced/legacy-grammar) - everything a `.pp2`
   file can say.
-- [PHP in a Grammar](/docs/compiler/code) - reducers and the variables they get.
-- [Code Generation](/docs/compiler/generation) - namespaces, class names, and
+- [PHP in a Grammar](/docs/basics/grammar-php) - reducers and the variables they get.
+- [Code Generation](/docs/basics/generation) - namespaces, class names, and
   what the output looks like.
-- [Command Line](/docs/compiler/cli) - checking and compiling a grammar with
+- [Command Line](/docs/basics/cli) - checking and compiling a grammar with
   `vendor/bin/phplrt`.
-- [Automation](/docs/compiler/automation) - composer scripts and CI jobs that
-  keep the grammar and the generated parser in step.
+- [Automation and CI](/docs/advanced/automation) - composer scripts and CI
+  jobs that keep the grammar and the generated parser in step.

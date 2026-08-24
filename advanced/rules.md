@@ -13,8 +13,8 @@ $grammar = [
 
 There are five rule classes, and between them they cover everything EBNF can
 say. You will usually get them from a
-[grammar file](/docs/compiler/grammar) or
-[the builder](/docs/parser/builder), but it helps to know what each one does.
+[grammar file](/docs/basics/grammar) or
+[the builder](/docs/advanced/builder), but it helps to know what each one does.
 
 ## Lexeme
 
@@ -79,7 +79,7 @@ Rule : "a" | "ab" ;   // never reads "ab"
 Rule : "ab" | "a" ;   // ✔
 ```
 
-See [Alternatives Are Ordered](/docs/parser#alternatives-are-ordered).
+See [Alternatives Are Ordered](/docs/advanced/parser#alternatives-are-ordered).
 
 ## Optional
 
@@ -151,7 +151,7 @@ Variable : <T_NAME> !::T_PARENTHESIS_OPEN:: ;
 Closure  : &::T_FN:: FunctionLiteral() ;
 ```
 
-See [Predicates](/docs/compiler/grammar#predicates).
+See [Predicates](/docs/basics/grammar#predicates).
 
 ## Sequences and Single Values
 
@@ -176,7 +176,7 @@ Rule : <T_DIGIT> ;           // $children is the token
 That is why a reducer often starts with an `is_array()` check - a rule that
 can match one thing *or* several will hand you one thing or several.
 
-More on this in [Results and Reducers](/docs/parser/ast).
+More on this in [Results and Reducers](/docs/basics/reducers).
 
 ## The Interfaces
 

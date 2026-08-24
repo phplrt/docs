@@ -134,4 +134,4 @@ function report(PositionFactoryInterface $factory, FileInterface $source, int $o
 "the beginning" is spelled as.
 
 Both interfaces live in packages of their own, described in
-[Contracts](/docs/position/contracts).
+[Contracts](/docs/contracts/position).

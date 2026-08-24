@@ -88,7 +88,7 @@ anything, so naming it is optional.
 
 `hide()` is shorthand for putting the token on the `Hidden` channel, and that
 is the one channel a lexer leaves out by default - see
-[Tokens and Channels](/docs/lexer/tokens) for the general case, including how
+[Tokens and Channels](/docs/basics/tokens) for the general case, including how
 to have the hidden tokens reported after all.
 
 ## Regex Modifiers
@@ -129,7 +129,7 @@ $lexer->lex(StringSource::createFromString('12 34'), offset: 3);
 // only "34" and the end of input
 ```
 
-More on this in [Tokens and Channels](/docs/lexer/tokens).
+More on this in [Tokens and Channels](/docs/basics/tokens).
 
 ## Unrecognized Input
 
@@ -178,7 +178,7 @@ $lexer = $result->toLexer();
 Building is not free - it validates every pattern, drops unreachable tokens
 and merges everything into one big regular expression. Do it once and keep
 the lexer around, or better still,
-[generate the code](/docs/compiler/generation) and skip building entirely.
+[generate the code](/docs/basics/generation) and skip building entirely.
 
 ## How The Pattern Is Built
 
@@ -240,15 +240,16 @@ grammar carries the way it wants to be compiled:
 %pragma lexer.check      \App\Grammar\MyValidationPass
 ```
 
-That is usually where you want to be - see [Compiler](/docs/compiler). The
-builder API is for the cases where the token list is not known in advance:
-generated from a config file, a database, a plugin system.
+That is usually where you want to be - see
+[Compiling a Grammar](/docs/basics/compiler). The builder API is for the cases where
+the token list is not known in advance: generated from a config file, a
+database, a plugin system.
 
 ## What's Next?
 
-- [Tokens and Channels](/docs/lexer/tokens) - the token API, channels and
+- [Tokens and Channels](/docs/basics/tokens) - the token API, channels and
   captures.
-- [Nested Lexers](/docs/lexer/embedding) - string interpolation, PHP inside
+- [Nested Lexers](/docs/advanced/embedding) - string interpolation, PHP inside
   HTML and other "a different language starts here" situations.
-- [Contracts](/docs/lexer/contracts) - `phplrt/lexer-contracts`, for code that
+- [Contracts](/docs/contracts/lexer) - `phplrt/lexer-contracts`, for code that
   needs a lexer without needing this one.

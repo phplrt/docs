@@ -33,9 +33,9 @@ Number -> { return (int) $children->value; }
 
 Whatever it returns becomes the value of that rule, and gets handed to the
 rule above. Where the block goes in a grammar file, and the variables it can
-use, are [PHP in a Grammar](/docs/compiler/code).
+use, are [PHP in a Grammar](/docs/basics/grammar-php).
 
-The same thing through [the builder](/docs/parser/builder):
+The same thing through [the builder](/docs/advanced/builder):
 
 ```php
 use Phplrt\Parser\Context;
@@ -183,7 +183,7 @@ BinaryNode(-)
 ```
 
 Note `$offset` in the `Number` reducer - that is one of the
-[variables the compiler provides](/docs/compiler/code). Keeping an offset on
+[variables the compiler provides](/docs/basics/grammar-php). Keeping an offset on
 every node is what lets you point at the right place in the source when
 something goes wrong later, during type-checking or evaluation.
 
@@ -205,7 +205,7 @@ static function (Context $ctx, mixed $children): mixed {
 
 In a `.pp3` reducer you rarely touch `$ctx` directly, because the common
 fields have shorter names - `$token`, `$offset`, `$source`. See
-[PHP in a Grammar](/docs/compiler/code).
+[PHP in a Grammar](/docs/basics/grammar-php).
 
 ## Returning Nothing
 
@@ -237,4 +237,4 @@ This means:
 - a reducer cannot influence parsing. It cannot look ahead, change what is
   matched next, or fail the parse to force a different alternative. If a
   decision depends on the input, express it in the grammar - that is what
-  [predicates](/docs/parser/rules#predicate) are for.
+  [predicates](/docs/advanced/rules#predicate) are for.

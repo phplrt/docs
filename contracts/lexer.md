@@ -106,7 +106,7 @@ composer require phplrt/lexer-contracts
 ```
 
 It contains no lexer, and requires nothing but PHP and
-[phplrt/source-contracts](/docs/source/contracts).
+[phplrt/source-contracts](/docs/contracts/source).
 
 A package implementing these interfaces provides the virtual package
 `phplrt/lexer-contracts-implementation`, so an application can ask for an
@@ -421,6 +421,6 @@ interface RuntimeExceptionInterface extends LexerExceptionInterface
 
 ## 4. See Also
 
-- [Usage](/docs/lexer) - the phplrt lexer itself.
-- [Tokens and Channels](/docs/lexer/tokens) - what a lexer does with channels.
-- [Parser Contracts](/docs/parser/contracts) - what consumes these tokens.
+- [Usage](/docs/advanced/lexer) - the phplrt lexer itself.
+- [Tokens and Channels](/docs/basics/tokens) - what a lexer does with channels.
+- [Parser Contracts](/docs/contracts/parser) - what consumes these tokens.

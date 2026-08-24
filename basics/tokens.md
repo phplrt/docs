@@ -56,7 +56,7 @@ $next = $token->offset + $token->size;
 ```
 
 For an ordinary token `size` is simply `strlen($value)`. It differs only for a
-token that [entered a nested lexer](/docs/lexer/embedding), which is as large
+token that [entered a nested lexer](/docs/advanced/embedding), which is as large
 as everything that lexer read.
 
 ## Printing
@@ -235,4 +235,4 @@ function describe(TokenInterface $token): string
 ```
 
 `Phplrt\Lexer\Token\Token` is the standard implementation;
-`TokenEmbedding` extends it for [nested lexers](/docs/lexer/embedding).
+`TokenEmbedding` extends it for [nested lexers](/docs/advanced/embedding).

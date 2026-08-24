@@ -1,4 +1,4 @@
-# Legacy Grammar Syntax
+# PP2 Grammar Syntax (Legacy)
 
 This page describes the `.pp2` format - the one phplrt 3.x read. It is still
 read exactly as it was, so a grammar written years ago compiles today without
@@ -13,7 +13,7 @@ $parser = new Compiler()
 The extension is what decides the format, so keeping the file named `.pp2` is
 all it takes.
 
-> For a new grammar, write [`.pp3`](/docs/compiler/grammar) instead. Notes
+> For a new grammar, write [`.pp3`](/docs/basics/grammar) instead. Notes
 > throughout this page mark what did not survive into that format.
 
 ## Comments
@@ -48,7 +48,7 @@ longest one, so a longer literal goes above a shorter one:
 %token T_STAR  \*
 ```
 
-See [Order Matters](/docs/lexer#order-matters).
+See [Order Matters](/docs/advanced/lexer#order-matters).
 
 **A pattern cannot contain a literal space** - whitespace separates the parts
 of the declaration. Write `\x20` or `\s` instead.
@@ -67,7 +67,7 @@ A token may name the state the reading continues in, and a token declared as
 Reading is nested rather than flat: naming a state from the initial one hands
 the reading over to it, and naming `default` from inside gives the control
 back. Everything the inner lexer read is carried by the token that entered it -
-see [Nested Lexers](/docs/lexer/embedding).
+see [Nested Lexers](/docs/advanced/embedding).
 
 Because it is nested, a token cannot jump from one named state into another:
 
@@ -139,7 +139,7 @@ Number -> { return (int) $children->value; }
 ```
 
 The variables a body may use are the same in both formats - see
-[PHP in a Grammar](/docs/compiler/code).
+[PHP in a Grammar](/docs/basics/grammar-php).
 
 ### A Class Name
 
@@ -231,7 +231,7 @@ Rule : <T_A> (<T_B> | <T_C>) <T_D> ;
 Arguments : Argument() (::T_COMMA:: Argument())* ;
 ```
 
-> This format has no [predicates](/docs/compiler/grammar#predicates).
+> This format has no [predicates](/docs/basics/grammar#predicates).
 
 ## Where Parsing Starts
 
@@ -249,8 +249,8 @@ error[UnsupportedPragmaException]: Unrecognized pragma "lexer.pcre.flag"
 ```
 
 Everything else - PCRE modifiers, compiler passes - is configured in PHP
-through [the lexer builder](/docs/lexer) and
-[the parser builder](/docs/parser/builder).
+through [the lexer builder](/docs/advanced/lexer) and
+[the parser builder](/docs/advanced/builder).
 
 ## Including Other Files
 

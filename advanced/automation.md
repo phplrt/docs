@@ -1,4 +1,4 @@
-# Automation
+# Automation and CI
 
 Rebuilding the parser after a grammar change is the kind of step that works
 right up until the day somebody forgets. Two composer scripts and a CI job
@@ -60,7 +60,7 @@ the day someone edits the grammar and forgets to rebuild.
 
 Run `check` with `-v`: the numbers land in the build log, so a reviewer can
 see the rule and token counts move in a pull request instead of guessing what
-a grammar change did. [Command Line](/docs/compiler/cli) explains what they
+a grammar change did. [Command Line](/docs/basics/cli) explains what they
 mean.
 
 ### GitHub Actions
@@ -170,4 +170,4 @@ if ($expected !== $actual) {
 }
 ```
 
-[Code Generation](/docs/compiler/generation) covers the API this leans on.
+[Code Generation](/docs/basics/generation) covers the API this leans on.

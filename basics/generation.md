@@ -197,8 +197,8 @@ $code = (string) new Compiler()
 
 That is how the build is kept honest: generate into a string, compare it with
 the committed file, and fail if the two have drifted apart.
-[Automation](/docs/compiler/automation) has the project layout, the composer
-scripts and the CI jobs that do it.
+[Automation and CI](/docs/advanced/automation) has the project layout, the
+composer scripts and the CI jobs that do it.
 
 ## When Not To Generate
 

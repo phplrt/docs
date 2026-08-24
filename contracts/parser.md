@@ -7,7 +7,7 @@ errors raised along the way.
 The goal is to let anything that uses a parser - a template engine, a
 configuration loader, a rule engine - depend on the ability to parse rather
 than on a particular parser, whether it is handwritten, assembled at runtime
-or [generated from a grammar](/docs/compiler/generation).
+or [generated from a grammar](/docs/basics/generation).
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
@@ -82,7 +82,7 @@ try {
 ```
 
 Rendering such an error as a snippet of the source is what
-[phplrt/exception](/docs/errors) does with the same three members.
+[phplrt/exception](/docs/basics/errors) does with the same three members.
 
 ## 2. Package
 
@@ -94,8 +94,8 @@ composer require phplrt/parser-contracts
 ```
 
 It contains no parser, and requires nothing but PHP,
-[phplrt/lexer-contracts](/docs/lexer/contracts) and
-[phplrt/source-contracts](/docs/source/contracts) - a syntax error has to name
+[phplrt/lexer-contracts](/docs/contracts/lexer) and
+[phplrt/source-contracts](/docs/contracts/source) - a syntax error has to name
 the token it happened on.
 
 A package implementing these interfaces provides the virtual package
@@ -110,7 +110,7 @@ composer require phplrt/parser-contracts-implementation
 
 Note that `analyze()`, which the phplrt parser also has, is deliberately not
 part of this specification: it is a diagnostic tool rather than part of what
-makes an object a parser. See [Usage](/docs/parser).
+makes an object a parser. See [Usage](/docs/advanced/parser).
 
 The package ships a test declaring an anonymous implementation of every
 interface in it. Changing that test is allowed only in a **major** release, so
@@ -220,6 +220,6 @@ interface RuntimeExceptionInterface extends ParserExceptionInterface
 
 ## 4. See Also
 
-- [Usage](/docs/parser) - the phplrt parser itself.
-- [Results and Reducers](/docs/parser/ast) - what a result is usually made of.
-- [Lexer Contracts](/docs/lexer/contracts) - the tokens a parser reads.
+- [Usage](/docs/advanced/parser) - the phplrt parser itself.
+- [Results and Reducers](/docs/basics/reducers) - what a result is usually made of.
+- [Lexer Contracts](/docs/contracts/lexer) - the tokens a parser reads.

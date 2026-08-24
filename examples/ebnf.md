@@ -21,7 +21,7 @@ The way out is a **predicate**. `!(Identifier() ::T_ASSIGN::)` matches nothing
 and consumes nothing - it only asks whether what comes next is a name followed
 by `::=`, and fails if it is. A name that opens a rule therefore cannot be
 read as part of the rule before it. See
-[Predicates](/docs/compiler/grammar#predicates) for what else they are good for.
+[Predicates](/docs/basics/grammar#predicates) for what else they are good for.
 
 ## Grammar
 

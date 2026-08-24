@@ -20,8 +20,8 @@ exception renders like this when converted to a string.
 
 The package has three entry points. `ErrorPrinter` is the one you use, and it
 is what this page is about. The other two are the halves it is built from:
-[`Analyzer`](/docs/errors/analyzer) works out where an error happened, and
-[`SnippetReader`](/docs/errors/snippet-reader) reads the source code lines around
+[`Analyzer`](/docs/advanced/analyzer) works out where an error happened, and
+[`SnippetReader`](/docs/advanced/snippet-reader) reads the source code lines around
 that place. Reach for them when you need the data rather than the picture.
 
 ## Catching Errors
@@ -173,7 +173,7 @@ $printer->print($e)
 ```
 
 Every one of them replaces a value inside the
-[analysis of the error](/docs/errors/analyzer), which is the only thing a
+[analysis of the error](/docs/advanced/analyzer), which is the only thing a
 `PrintableError` holds besides the renderer:
 
 ```php
@@ -260,7 +260,7 @@ wrapped or cut - so the output is as wide as the widest line of the source.
 
 `RendererInterface` takes everything that is known about the error and returns
 a string, so a one-line-per-error format for a CI log is a small class. The
-source code lines are read by a [`SnippetReader`](/docs/errors/snippet-reader)
+source code lines are read by a [`SnippetReader`](/docs/advanced/snippet-reader)
 of its own:
 
 ```php
@@ -363,9 +363,9 @@ reports, which is exactly what you want.
 `ErrorPrinter` is the two halves below glued together and rendered. Use them
 directly when the picture is not what you are after:
 
-- [Analysing an Error](/docs/errors/analyzer) - `Analyzer`, the source, the
+- [Analysing an Error](/docs/advanced/analyzer) - `Analyzer`, the source, the
   position and the fragment behind any `Throwable`, for diagnostics you report
   somewhere other than a terminal.
-- [Reading a Snippet](/docs/errors/snippet-reader) - `SnippetReader`, the
+- [Reading a Snippet](/docs/advanced/snippet-reader) - `SnippetReader`, the
   source code lines around the fragment and the exact bytes captured on each
   of them.

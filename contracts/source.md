@@ -89,7 +89,7 @@ cannot be converted to a string.
 
 It is also the exception the neighbouring specifications declare when the
 failure is really a failure of the source:
-[position-factory-contracts](/docs/position/contracts) raises it rather than
+[position-factory-contracts](/docs/contracts/position) raises it rather than
 introducing an exception of its own.
 
 ## 2. Package
@@ -255,6 +255,6 @@ interface SourceFactoryInterface
 
 ## 4. See Also
 
-- [Usage](/docs/source) - the phplrt sources and the factory behind them.
-- [Position Contracts](/docs/position/contracts) - naming a place inside a
+- [Usage](/docs/advanced/source) - the phplrt sources and the factory behind them.
+- [Position Contracts](/docs/contracts/position) - naming a place inside a
   source.

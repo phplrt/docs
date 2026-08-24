@@ -353,5 +353,5 @@ arrives in chunks of its own, such as a paged HTTP response - `$content` and
 that have already arrived is what makes them answerable twice.
 
 The two members are all there is to it, and they live in a package of their
-own - see [Contracts](/docs/source/contracts) for what an implementation has
+own - see [Contracts](/docs/contracts/source) for what an implementation has
 to promise and for the factory contract next to it.

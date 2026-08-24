@@ -1,7 +1,7 @@
 # Analysing an Error
 
 > This page is about the data behind the diagnostics. For printing them, see
-> [Error Reporting](/docs/errors).
+> [Error Reporting](/docs/basics/errors).
 
 `ErrorPrinter` turns an exception into a picture. `Analyzer` is the half that
 works out *what* to draw: it takes any `Throwable` and gives back a
@@ -123,4 +123,4 @@ $analyzer = new Analyzer(new PositionFactory(chunkSize: 65536));
 ```
 
 A position is the line and the column of the *beginning* of the fragment, both
-counted from one. See [Position](/docs/position) for the details.
+counted from one. See [Position](/docs/advanced/position) for the details.

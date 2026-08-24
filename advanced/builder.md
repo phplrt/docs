@@ -3,12 +3,12 @@
 > This package can be installed separately with
 > `composer require phplrt/parser-builder`
 
-Writing the [rule array](/docs/parser/rules) by hand works, but you have to
+Writing the [rule array](/docs/advanced/rules) by hand works, but you have to
 keep track of indices yourself, and one inserted rule renumbers everything.
 The builder does that for you: you describe rules as objects, and it turns
 them into the flat array - validating and optimizing along the way.
 
-This is also what the [grammar compiler](/docs/compiler) uses internally. A
+This is also what the [grammar compiler](/docs/basics/compiler) uses internally. A
 `.pp3` file is easier to read, so reach for the builder when the grammar is
 not known ahead of time: assembled from plugins, from a config file, from a
 database.
@@ -143,7 +143,7 @@ $number = $grammar->addTokenReference('T_DIGIT', 'Number')
 ```
 
 Any callable works. But note: a closure cannot be written into a generated
-file. If you plan to [generate code](/docs/compiler/generation), define the
+file. If you plan to [generate code](/docs/basics/generation), define the
 reducer as PHP source instead:
 
 ```php
@@ -240,7 +240,7 @@ A `.pp3` grammar can do all of this itself, without any PHP around it:
 %pragma parser.disable  \Phplrt\Parser\Builder\Compiler\NestedConcatenationParserCompilerPass
 ```
 
-See [Settings](/docs/compiler/grammar#settings).
+See [Settings](/docs/basics/grammar#settings).
 
 ## The Result
 

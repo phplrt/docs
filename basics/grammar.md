@@ -1,4 +1,4 @@
-# Grammar Syntax
+# PP3 Grammar Syntax
 
 A grammar file describes a language: the words it is made of, and the order
 they may appear in. Here is one in full:
@@ -68,7 +68,7 @@ with:
 %token T_STAR  \*
 ```
 
-See [Order Matters](/docs/lexer#order-matters).
+See [Order Matters](/docs/advanced/lexer#order-matters).
 
 **A declaration is one line.** It is read by a lexer of its own, which starts
 at `%token` and stops at the line break, and it expects exactly three things:
@@ -113,7 +113,7 @@ read. There are three actions, and each is written as a call:
 
 ### channel(x)
 
-A [channel](/docs/lexer/tokens) labels a token, so that a reader of the stream
+A [channel](/docs/basics/tokens) labels a token, so that a reader of the stream
 can tell it apart from the code around it - documentation comments are the
 usual reason:
 
@@ -145,7 +145,7 @@ comment, an embedded language:
 
 A token declared as `state:NAME` belongs to that state's lexer. Everything
 that lexer reads is carried by the token that entered it, so `T_TEXT` never
-reaches the outer stream. See [Nested Lexers](/docs/lexer/embedding).
+reaches the outer stream. See [Nested Lexers](/docs/advanced/embedding).
 
 ### Several At Once
 
@@ -202,7 +202,7 @@ semicolon.
 
 Such a lexer decides on its own where its fragment ends: it stops, and control
 returns to the lexer that called it, so it needs no token doing `exit()`. See
-[Nested Lexers](/docs/lexer/embedding).
+[Nested Lexers](/docs/advanced/embedding).
 
 ## Declaring Rules
 
@@ -303,7 +303,7 @@ longer alternative is written before a shorter one it starts with:
 Rule : "ab" | "a" ;   // ✔ - the other way round never reads "ab"
 ```
 
-See [Alternatives Are Ordered](/docs/parser#alternatives-are-ordered).
+See [Alternatives Are Ordered](/docs/advanced/parser#alternatives-are-ordered).
 
 ### Grouping
 
@@ -424,7 +424,7 @@ way phplrt calls it:
 ```
 
 By default, the pattern is compiled with `S`, `u`, `s` and `m`. See
-[Regex Modifiers](/docs/lexer#regex-modifiers) for what each of them means.
+[Regex Modifiers](/docs/advanced/lexer#regex-modifiers) for what each of them means.
 
 ### Compiler Passes
 
@@ -448,7 +448,7 @@ optimization it does not want:
 %pragma parser.disable \Phplrt\Parser\Builder\Compiler\NestedConcatenationParserCompilerPass
 ```
 
-[Building a Grammar](/docs/parser/builder) describes what the passes are and
+[Building a Grammar](/docs/advanced/builder) describes what the passes are and
 when each priority runs.
 
 ## Including Other Files
@@ -485,7 +485,7 @@ Number -> { return new \App\Ast\NumberNode($offset, $children->value); }
   ;
 ```
 
-This has a page of its own: [PHP in a Grammar](/docs/compiler/code).
+This has a page of its own: [PHP in a Grammar](/docs/basics/grammar-php).
 
 ## Naming Conventions
 

@@ -84,8 +84,8 @@ You use it while developing, and - ideally - you run it once and commit the
 result.
 
 The **runtime** (`phplrt/runtime`, i.e. the lexer, the parser and the source
-reader) is what actually reads your users' code. It knows nothing about grammar files: it takes a compiled table
-of tokens and rules and runs it.
+reader) is what actually reads your users' code. It knows nothing about
+grammar files: it takes a compiled table of tokens and rules and runs it.
 
 ```
 grammar.pp3  ──[ compiler ]──▶  Parser.php  ──[ runtime ]──▶  your AST
@@ -111,7 +111,7 @@ what to call itself in an error message.
 composer require phplrt/source
 ```
 
-[Read more →](/docs/source)
+[Read more →](/docs/advanced/source)
 
 ### Lexer
 
@@ -123,7 +123,7 @@ which is how you read a string literal, or PHP inside HTML.
 composer require phplrt/lexer
 ```
 
-[Read more →](/docs/lexer)
+[Read more →](/docs/advanced/lexer)
 
 ### Parser
 
@@ -139,7 +139,7 @@ never any ambiguity.
 composer require phplrt/parser
 ```
 
-[Read more →](/docs/parser)
+[Read more →](/docs/advanced/parser)
 
 ### Lexer Builder and Parser Builder
 
@@ -151,7 +151,7 @@ directly if you would rather build your grammar in code than in a file.
 composer require phplrt/lexer-builder phplrt/parser-builder
 ```
 
-[Read more →](/docs/parser/builder)
+[Read more →](/docs/advanced/builder)
 
 ### Compiler
 
@@ -163,7 +163,7 @@ code.
 composer require phplrt/compiler --dev
 ```
 
-[Read more →](/docs/compiler)
+[Read more →](/docs/basics/compiler)
 
 ### Exception
 
@@ -181,11 +181,11 @@ error[UnexpectedTokenException]: Syntax error, unexpected "+" (T_PLUS), T_NUMBER
 composer require phplrt/exception
 ```
 
-[Read more →](/docs/errors)
+[Read more →](/docs/basics/errors)
 
 ## What's Next?
 
-- [Quick Start](/docs/guide/quick-start) - build a small language end to end.
-- [Grammar Syntax](/docs/compiler/grammar) - everything a `.pp3` file can say.
-- [Lexer](/docs/lexer) - tokens, channels and nested lexers.
-- [Parser](/docs/parser) - rules, reducers and the result they build.
+- [Quick Start](/docs/start/quick-start) - build a small language end to end.
+- [PP3 Grammar Syntax](/docs/basics/grammar) - everything a `.pp3` file can say.
+- [Lexer](/docs/advanced/lexer) - tokens, channels and nested lexers.
+- [Parser](/docs/advanced/parser) - rules, reducers and the result they build.

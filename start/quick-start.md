@@ -286,7 +286,7 @@ $parser->analyze(StringSource::createFromString('name ='), Mode::SyntaxCheck) in
 
 It also tells you *how much* of the input is valid and what stands in the way,
 which is what you want for an editor or a prompt - see
-[Analysing A Source](/docs/parser#analysing-a-source).
+[Analysing A Source](/docs/advanced/parser#analysing-a-source).
 
 ## Step 6: Compile It Once
 
@@ -375,7 +375,7 @@ Reference -> { return $this->reference($children->captures[0], $offset, $source)
 
 The pattern has a capturing group, and `$children->captures[0]` is what that
 group matched - the name alone, without the `${}` around it. More on captures
-in [Tokens and Channels](/docs/lexer/tokens).
+in [Tokens and Channels](/docs/basics/tokens).
 
 Regenerate, and notice what the compiler did with the new rule:
 
@@ -456,16 +456,16 @@ error[UnknownVariableException]: Unknown variable "NOPE"
 ```
 
 `ErrorPrinter` renders any offset in any source - see
-[Error Reporting](/docs/errors). Subclassing has a few rules of its own, and
-they are collected in [Best Practices](/docs/guide/best-practice).
+[Error Reporting](/docs/basics/errors). Subclassing has a few rules of its own, and
+they are collected in [Best Practices](/docs/basics/best-practice).
 
 ## What's Next?
 
-- [Grammar Syntax](/docs/compiler/grammar) - the full `.pp3` reference.
-- [PHP in a Grammar](/docs/compiler/code) - reducers, the variables they see
+- [PP3 Grammar Syntax](/docs/basics/grammar) - the full `.pp3` reference.
+- [PHP in a Grammar](/docs/basics/grammar-php) - reducers, the variables they see
   and what `$children` holds.
-- [Lexer](/docs/lexer) - channels, captures and nested lexers.
-- [Code Generation](/docs/compiler/generation) - namespaces, imports, and
+- [Lexer](/docs/advanced/lexer) - channels, captures and nested lexers.
+- [Code Generation](/docs/basics/generation) - namespaces, imports, and
   what the generated file looks like.
-- [Best Practices](/docs/guide/best-practice) - what to do with the parser
+- [Best Practices](/docs/basics/best-practice) - what to do with the parser
   once it works.

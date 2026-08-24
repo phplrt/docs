@@ -1,11 +1,12 @@
 # Reading a Snippet
 
 > This page is about the source code lines behind the diagnostics. For
-> printing them, see [Error Reporting](/docs/errors).
+> printing them, see [Error Reporting](/docs/basics/errors).
 
 `SnippetReader` is what a renderer reads the source code with. It takes the
-[analysis of an error](/docs/errors/analyzer) and reads the lines of the source code around
-the fragment it covers, telling which part of which line is at fault.
+[analysis of an error](/docs/advanced/analyzer) and reads the lines of the source
+code around the fragment it covers, telling which part of which line is at
+fault.
 
 Use it when you want the lines rather than the picture - your own renderer, a
 web page highlighting the error, or an editor jumping to it.

@@ -14,7 +14,7 @@ returning a `JsonValue` for every rule.
 
 ## Keep Your Code Out Of The Generated File
 
-The [generated file](/docs/compiler/generation) says what it is right at the
+The [generated file](/docs/basics/generation) says what it is right at the
 top:
 
 ```php
@@ -73,7 +73,7 @@ Two things the compiler decides for you, and one convention worth adopting:
 
 ## Let The Grammar Reach Your Settings
 
-A [reducer](/docs/compiler/code) is compiled into a method of the parser, so
+A [reducer](/docs/basics/grammar-php) is compiled into a method of the parser, so
 `$this` inside a code block is the parser itself. Anything the object knows,
 the grammar can ask for:
 
@@ -144,7 +144,7 @@ fine as long as the grammar does not name it.
 > nothing to bind to, and the rule fails with
 > `Using $this when not in object context` the first time it is reduced. Keep
 > `$this` out of grammars you intend to read on the fly - see
-> [Code Generation](/docs/compiler/generation).
+> [Code Generation](/docs/basics/generation).
 
 ## Keep State In An Object, Not In A Property
 
@@ -246,7 +246,7 @@ starts returning something else.
 ## Widen The Input If You Want To
 
 The lexer and the parser accept a
-[`ReadableInterface`](/docs/source) and nothing else. That is not an
+[`ReadableInterface`](/docs/advanced/source) and nothing else. That is not an
 oversight - a bare string is ambiguous. Is `"config.json"` a JSON string source 
 or the name of a file?
 
@@ -279,7 +279,7 @@ $parser->parse(FileSource::createFromPathname(__DIR__ . '/a.json')); // a file i
 ```
 
 For the "figure out what this is" behaviour of 3.x, hand the job to
-[`SourceFactory`](/docs/source), which turns a string, an `SplFileInfo` or a
+[`SourceFactory`](/docs/advanced/source), which turns a string, an `SplFileInfo` or a
 stream resource into a source:
 
 ```php
@@ -311,7 +311,8 @@ final readonly class JsonParser extends CompiledJsonParser
 }
 ```
 
-As a result, you can pass any set of data you may need to your parser, like in phplrt 3.x:
+As a result, you can pass any set of data you may need to your parser, like in
+phplrt 3.x:
 
 ```php
 $parser->parse('{"a": 1}');

@@ -8,7 +8,7 @@ matches.
 This page is about writing one in a `.pp3` file: where the code goes, what the
 compiler puts around it, and what happens to it when the parser is generated.
 What a reducer is handed and what it should return is
-[Results and Reducers](/docs/parser/ast).
+[Results and Reducers](/docs/basics/reducers).
 
 ## A Block of Code
 
@@ -62,11 +62,11 @@ declared if you use them, so there is no cost to the ones you do not.
 
 What `$children` holds depends on what the rule matched - a token, an array of
 them, or whatever the reducers below it returned. See
-[What `$children` Contains](/docs/parser/ast#what-children-contains).
+[What `$children` Contains](/docs/basics/reducers#what-children-contains).
 
 ## In Generated Code
 
-When you [generate a parser](/docs/compiler/generation), reducers become real
+When you [generate a parser](/docs/basics/generation), reducers become real
 methods, named after the rule they belong to:
 
 ```php

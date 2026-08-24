@@ -3,46 +3,40 @@
         "Upgrade Guide": "upgrade",
         "Contribution Guide": "contributions"
     },
-    "Guide": {
-        "Introduction": "guide/introduction",
-        "Installation": "installation",
-        "Quick Start": "guide/quick-start",
-        "Best Practices": "guide/best-practice"
+    "Getting Started": {
+        "Introduction": "start/introduction",
+        "Installation": "start/installation",
+        "Quick Start": "start/quick-start"
     },
-    "Compiler": {
-        "Usage": "compiler",
-        "PP3 Grammar Syntax": "compiler/grammar",
-        "PHP in a Grammar": "compiler/code",
-        "Code Generation": "compiler/generation",
-        "Command Line": "compiler/cli",
-        "Automation": "compiler/automation",
-        "PP2 Grammar Syntax (Legacy)": "compiler/legacy-grammar"
+    "The Basics": {
+        "PP3 Grammar": "basics/grammar",
+        "Tokens & Channels": "basics/tokens",
+        "PHP Injections": "basics/grammar-php",
+        "Results and Reducers": "basics/reducers",
+        "Compiling a Grammar": "basics/compiler",
+        "Code Generation": "basics/generation",
+        "Command Line": "basics/cli",
+        "Error Reporting": "basics/errors",
+        "Best Practices": "basics/best-practice"
     },
-    "Lexer": {
-        "Usage": "lexer",
-        "Tokens and Channels": "lexer/tokens",
-        "Nested Lexers": "lexer/embedding"
-    },
-    "Parser": {
-        "Usage": "parser",
-        "Grammar Rules": "parser/rules",
-        "Building a Grammar": "parser/builder",
-        "Results and Reducers": "parser/ast"
-    },
-    "Source": {
-        "Usage": "source",
-        "Position": "position"
-    },
-    "Errors": {
-        "Usage": "errors",
-        "Analysing an Error": "errors/analyzer",
-        "Reading a Snippet": "errors/snippet-reader"
+    "Digging Deeper": {
+        "Lexer": "advanced/lexer",
+        "Nested Lexers": "advanced/embedding",
+        "Parser": "advanced/parser",
+        "Grammar Rules": "advanced/rules",
+        "Building a Grammar": "advanced/builder",
+        "Source": "advanced/source",
+        "Position": "advanced/position",
+        "Analysing an Error": "advanced/analyzer",
+        "Reading a Snippet": "advanced/snippet-reader",
+        "Automation and CI": "advanced/automation",
+        "PP2 Grammar Syntax (Legacy)": "advanced/legacy-grammar"
     },
     "Contracts": {
-        "Lexer": "lexer/contracts",
-        "Parser": "parser/contracts",
-        "Source": "source/contracts",
-        "Position": "position/contracts"
+        "Lexer": "contracts/lexer",
+        "Parser": "contracts/parser",
+        "Source": "contracts/source",
+        "Position": "contracts/position"
     },
     "Examples": {
         "Overview": "examples",

@@ -55,7 +55,7 @@ if ($token->getName() === 'T_DIGIT') { /* ... */ }
 if ($token->id === MyParser::T_DIGIT) { /* ... */ }
 ```
 
-[Generated parsers](/docs/compiler/generation) expose the ids as class
+[Generated parsers](/docs/basics/generation) expose the ids as class
 constants, so you do not have to track the numbers yourself.
 
 ### The Lexer Is Built, Not Configured
@@ -92,7 +92,7 @@ $lexer = $builder->build()
 > Likelihood Of Impact: **Medium**
 
 The lexer no longer takes a list of names to skip. Every token carries a
-[channel](/docs/lexer/tokens), and the lexer reports every channel except the
+[channel](/docs/basics/tokens), and the lexer reports every channel except the
 ones it is told to leave out - `Hidden` alone, unless you say otherwise.
 
 ```php
@@ -128,7 +128,7 @@ $parser = new Parser(
 
 Rules are keyed by **integers** rather than by name, and they refer to each
 other by index. In practice you do not write this array by hand - see
-[the parser builder](/docs/parser/builder).
+[the parser builder](/docs/advanced/builder).
 
 ### BuilderInterface Became Per-Rule Reducers
 
@@ -190,7 +190,7 @@ How far the grammar got is the class of the result: `SuccessfulResult`,
 `PartialResult` or `FailureResult`. Nothing is kept on the parser between
 calls, so `getLastExecutionContext()` has no replacement.
 
-See [Analysing A Source](/docs/parser#analysing-a-source).
+See [Analysing A Source](/docs/advanced/parser#analysing-a-source).
 
 ### A Source Is Read By Offset
 
@@ -230,7 +230,7 @@ VirtualSource::createFromString('x.txt', '2 + 2'); // a string with a name
 `SourceFactory::createDefault()` is there if you need the "figure out what this
 is" behaviour, now behind a single `create()` method.
 
-See [Source](/docs/source).
+See [Source](/docs/advanced/source).
 
 ### Positions Are Calculated By A Factory
 
@@ -244,7 +244,7 @@ and the column alone - the offset it was built from is not a part of it, and
 offset past the end of the source, and `Interval`, `IntervalFactoryTrait` and
 `PositionFactoryTrait` are gone.
 
-See [Position](/docs/position).
+See [Position](/docs/advanced/position).
 
 ### The `.pp` Format Is No Longer Read
 
@@ -253,7 +253,7 @@ See [Position](/docs/position).
 Grammars written in the original Hoa-style `.pp` format are not supported.
 A `.pp` file is still recognized by its extension, so you get a clear error
 rather than a confusing parse failure. Rewrite the grammar in one of the
-formats that are read - see [Grammar Syntax](/docs/compiler/grammar).
+formats that are read - see [PP3 Grammar Syntax](/docs/basics/grammar).
 
 ### Grammar Files: What To Check
 
@@ -265,10 +265,10 @@ of them compile unchanged. What no longer works:
 **The old pragmas.** Unification and the error levels are gone; the
 corresponding behaviour is either the default now or is configured in PHP.
 Which settings a grammar may carry is listed under
-[Settings](/docs/compiler/grammar#settings).
+[Settings](/docs/basics/grammar#settings).
 
 **`$file` and `$state` in a reducer.** Use `$source` and `$rule`, which is an
-`int`. See [PHP in a Grammar](/docs/compiler/code).
+`int`. See [PHP in a Grammar](/docs/basics/grammar-php).
 
 **Left recursion**, which is now rejected at build time. It never worked at
 runtime either, but 3.x would let you compile it. Rewrite as a repetition:
@@ -286,7 +286,7 @@ If a rule of yours legitimately produces `null`, wrap it.
 
 **Reducers returning arrays** are flattened into the rule above. If you
 relied on nesting, return an object instead. See
-[Results and Reducers](/docs/parser/ast).
+[Results and Reducers](/docs/basics/reducers).
 
 ### Everything Else That Is Gone
 
@@ -303,4 +303,4 @@ relied on nesting, return an object instead. See
 
 Code generation, dropped in 3.0 in favour of a config array, is back and now
 emits the lexer, the token constants and the reducers as a real class - see
-[Code Generation](/docs/compiler/generation).
+[Code Generation](/docs/basics/generation).

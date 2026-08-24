@@ -110,7 +110,7 @@ $constraint = $parser->parse(StringSource::createFromString('~1.2 || ^2.0 || 3.*
 
 The grammar recognises the constraint and gives back its parts; deciding
 whether a given version satisfies it is a job for PHP, not for a grammar. Hang
-a [reducer](/docs/parser/ast) on `Comparison` and `HyphenRange` and you have
+a [reducer](/docs/basics/reducers) on `Comparison` and `HyphenRange` and you have
 the matcher.
 
 > **More grammars.** The [other examples](/docs/examples), and

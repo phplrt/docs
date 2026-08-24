@@ -87,7 +87,7 @@ Both use the `Phplrt\Contracts\Position` namespace; the split is about what a
 consumer depends on. `phplrt/position-contracts` requires nothing but PHP - a
 line and a column mean nothing about where they came from - while
 `phplrt/position-factory-contracts` requires it along with
-[phplrt/source-contracts](/docs/source/contracts), since counting lines means
+[phplrt/source-contracts](/docs/contracts/source), since counting lines means
 reading a source.
 
 A package implementing them provides the corresponding virtual package:
@@ -211,7 +211,7 @@ interface PositionFactoryInterface
 
 ## 4. See Also
 
-- [Usage](/docs/position) - the phplrt implementation, and what it does about
+- [Usage](/docs/advanced/position) - the phplrt implementation, and what it does about
   a large source.
-- [Source Contracts](/docs/source/contracts) - what a position is calculated
+- [Source Contracts](/docs/contracts/source) - what a position is calculated
   over.
