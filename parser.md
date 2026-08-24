@@ -127,10 +127,13 @@ leaves nothing behind. The result is assembled afterwards, in one pass, by
 running the reducers bottom-up - which is why an analysis that only checks the
 syntax costs less than one building a value.
 
-Two consequences are worth knowing before you write a grammar.
+## Two Consequences
 
-**Alternatives are ordered.** The first one that matches wins, and the rest
-are not tried:
+How it reads decides two things about the grammars you can write.
+
+### Alternatives Are Ordered
+
+The first alternative that matches wins, and the rest are not tried:
 
 ```pp3
 Rule : "a" | "ab" ;
@@ -146,7 +149,9 @@ Rule : "ab" | "a" ;
 The upside is that a grammar is never ambiguous: there is exactly one way to
 read any input, and you can always tell which one by reading top to bottom.
 
-**Left recursion is not allowed.** A rule cannot start with itself:
+### Left Recursion Is Not Allowed
+
+A rule cannot start with itself:
 
 ```pp3
 // This never terminates, and the builder will refuse it

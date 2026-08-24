@@ -5,6 +5,11 @@ parse - a number, an AST node, a configuration array - you attach PHP to a
 rule. That piece of PHP is called a **reducer**, and it runs when the rule
 matches.
 
+This page is about writing one in a `.pp3` file: where the code goes, what the
+compiler puts around it, and what happens to it when the parser is generated.
+What a reducer is handed and what it should return is
+[Results and Reducers](/docs/parser/ast).
+
 ## A Block of Code
 
 Put it between `->` and the rule body:
@@ -19,57 +24,23 @@ Whatever it returns becomes the value of the rule. The code is ordinary PHP -
 loops, conditionals, whatever you need:
 
 ```pp3
-Expression -> {
-    if (!\is_array($children)) {
-        return $children;
+Name -> {
+    $name = $children->value;
+
+    if (\str_starts_with($name, '$')) {
+        return new \App\Ast\VariableNode($offset, \substr($name, 1));
     }
 
-    $result = \array_shift($children);
-
-    while ($children !== []) {
-        $operator = \array_shift($children);
-        $right = \array_shift($children);
-
-        $result = $operator->value === '+' 
-            ? $result + $right 
-            : $result - $right;
-    }
-
-    return $result;
+    return new \App\Ast\ConstantNode($offset, $name);
 }
-  : Term() ((<T_PLUS> | <T_MINUS>) Term())*
+  : <T_NAME>
   ;
 ```
 
 Braces inside strings are safe - the block is read by a real PHP lexer, so
 `"{"` is a string, not the end of the block.
 
-## Building A Node
-
-A block of code is the only form a reducer takes, so a rule that maps onto a
-node class builds it there:
-
-```pp3
-Number -> { return new \App\Ast\NumberNode($offset, (int) $children->value); }
-  : <T_DIGIT>
-  ;
-```
-
-```php
-namespace App\Ast;
-
-final class NumberNode
-{
-    public function __construct(
-        public readonly int $offset,
-        public readonly int $value,
-    ) {}
-}
-```
-
-Passing the node exactly what it needs is a little more typing than handing
-the whole context over, and it keeps the node a plain value object that knows
-nothing about the parser.
+An empty block (`-> {}`) is the same as writing no reducer at all.
 
 ## The Variables
 
@@ -89,64 +60,9 @@ All except `$children` and `$ctx` are shorthands the compiler expands for
 you - `$offset` becomes `$ctx->token->offset`, and so on. They are only
 declared if you use them, so there is no cost to the ones you do not.
 
-```pp3
-Number -> { return new \NumberNode($offset, (float) $children->value); }
-  : <T_NUMBER>
-  ;
-```
-
-Keeping an offset on every node is a habit worth forming. It is what lets a
-later stage - a type checker, an evaluator, a linter - point at the right
-place in the source when it finds a problem.
-
-## What `$children` Holds
-
-**A sequence** (a concatenation or a repetition) gives you an **array**:
-
-```pp3
-Pair : <T_DIGIT> <T_DIGIT> ;   // $children = [Token, Token]
-List : <T_DIGIT>+ ;            // $children = [Token, Token, ...]
-```
-
-**Anything else** gives you a single value:
-
-```pp3
-Number : <T_DIGIT> ;           // $children = Token
-Choice : Number() | Name() ;   // $children = whatever matched
-```
-
-A rule that can match one thing *or* several will hand you one thing or
-several, which is why reducers so often start with:
-
-```pp3
-Rule -> {
-    if (!\is_array($children)) {
-        return $children;
-    }
-
-    // ...
-}
-```
-
-The [Results and Reducers](/docs/parser/ast) page goes into how nested values
-are combined.
-
-## Returning Nothing
-
-Return `null` and the children pass through untouched, as if the reducer were
-not there:
-
-```pp3
-Debug -> {
-    \error_log('reached rule ' . $rule . ' at ' . $offset);
-
-    return null; // leave the result alone
-}
-  : <T_NAME>
-  ;
-```
-
-An empty block (`-> {}`) is the same as writing no reducer at all.
+What `$children` holds depends on what the rule matched - a token, an array of
+them, or whatever the reducers below it returned. See
+[What `$children` Contains](/docs/parser/ast#what-children-contains).
 
 ## In Generated Code
 

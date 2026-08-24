@@ -171,8 +171,5 @@ Three kinds of comment are thrown away by `%skip` - `//`, `#` and `/* ... */` -
 and so is the whitespace that separates statements, since DOT is happy to have
 its statements on one line or on twenty.
 
-> **25+ more grammars.** [phplrt/grammars](https://github.com/phplrt/grammars)
-> collects ready to read grammars for real languages - JSON5, TSV, semantic
-> versions, DQL, PHQL, JMS types, PSR-5 and Doctrine annotations, Symfony
-> expressions, Go! AOP pointcuts, Praspel contracts and more - each with sample
-> inputs and a test that keeps it honest.
+> **More grammars.** The [other examples](/docs/examples), and
+> [phplrt/grammars](https://github.com/phplrt/grammars) for 25+ real languages.

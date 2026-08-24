@@ -60,22 +60,15 @@ but they never leave the lexer and do not clutter the grammar:
 ```
 
 **Order matters.** The lexer takes the first pattern that matches, not the
-longest one:
-
-```pp3
-%token T_STAR  \*      // matches first...
-%token T_POW   \*\*    // ...so this never matches
-```
-
-Put the longer one first:
+longest one, so a longer token is declared before a shorter one it starts
+with:
 
 ```pp3
 %token T_POW   \*\*    // ✔
 %token T_STAR  \*
 ```
 
-Same story with keywords: declare `if` before your identifier pattern, or
-`if` will be read as an identifier.
+See [Order Matters](/docs/lexer#order-matters).
 
 **A declaration is one line.** It is read by a lexer of its own, which starts
 at `%token` and stops at the line break, and it expects exactly three things:
@@ -303,13 +296,14 @@ declare a real token so the error messages can name it.
 Primary : Number() | Name() | Group() ;
 ```
 
-The alternatives are tried **in order**, and the first match wins. Nothing
-else is tried, even if it would have matched more:
+The alternatives are tried **in order**, and the first match wins, so a
+longer alternative is written before a shorter one it starts with:
 
 ```pp3
-Rule : "a" | "ab" ;   // ✘ never reads "ab"
-Rule : "ab" | "a" ;   // ✔
+Rule : "ab" | "a" ;   // ✔ - the other way round never reads "ab"
 ```
+
+See [Alternatives Are Ordered](/docs/parser#alternatives-are-ordered).
 
 ### Grouping
 

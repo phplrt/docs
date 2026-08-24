@@ -32,7 +32,8 @@ Number -> { return (int) $children->value; }
 ```
 
 Whatever it returns becomes the value of that rule, and gets handed to the
-rule above.
+rule above. Where the block goes in a grammar file, and the variables it can
+use, are [PHP in a Grammar](/docs/compiler/code).
 
 The same thing through [the builder](/docs/parser/builder):
 
@@ -131,6 +132,10 @@ final class BinaryNode extends Node
     }
 }
 ```
+
+Nothing here knows about the parser: a node is handed exactly the values it
+needs, which is a little more typing in the grammar and leaves you with plain
+value objects.
 
 Then build them in the grammar:
 

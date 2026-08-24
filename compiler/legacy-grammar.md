@@ -48,6 +48,8 @@ longest one, so a longer literal goes above a shorter one:
 %token T_STAR  \*
 ```
 
+See [Order Matters](/docs/lexer#order-matters).
+
 **A pattern cannot contain a literal space** - whitespace separates the parts
 of the declaration. Write `\x20` or `\s` instead.
 

@@ -79,9 +79,7 @@ Rule : "a" | "ab" ;   // never reads "ab"
 Rule : "ab" | "a" ;   // ✔
 ```
 
-This is what makes a PEG grammar unambiguous. If you are coming from a
-classic EBNF tool that picks the longest match, this is the one habit you
-need to unlearn.
+See [Alternatives Are Ordered](/docs/parser#alternatives-are-ordered).
 
 ## Optional
 
