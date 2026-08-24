@@ -221,8 +221,8 @@ $source->content;      // string - the whole source
 $source->read(0, 4096) // string - at most 4096 bytes located at offset 0
 ```
 
-How long a source is is not among them: a pipe has no length until it ends, so
-the question only has an answer for some of the sources and is asked of those
+The length of a source is not among them. A pipe has no length until it ends,
+so only some of the sources can answer that question, and it is asked of those
 alone - `FileSource::$size` answers it with `filesize()`.
 
 All of them may throw `SourceExceptionInterface` - a file can disappear between

@@ -459,7 +459,7 @@ error[UnknownVariableException]: Unknown variable "NOPE"
 [Error Reporting](/docs/errors). Subclassing has a few rules of its own, and
 they are collected in [Best Practices](/docs/guide/best-practice).
 
-## Whats Next?
+## What's Next?
 
 - [Grammar Syntax](/docs/compiler/grammar) - the full `.pp3` reference.
 - [PHP in a Grammar](/docs/compiler/code) - reducers, the variables they see

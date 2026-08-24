@@ -229,7 +229,7 @@ Rule : <T_A> (<T_B> | <T_C>) <T_D> ;
 Arguments : Argument() (::T_COMMA:: Argument())* ;
 ```
 
-> This format has no [predicates](/docs/compiler/grammar).
+> This format has no [predicates](/docs/compiler/grammar#predicates).
 
 ## Where Parsing Starts
 

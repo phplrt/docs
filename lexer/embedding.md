@@ -112,7 +112,7 @@ A token may do more than one thing, written with commas:
 %token T_QUOTE_OPEN  "  -> state(string), channel(strings)
 ```
 
-See [Token Actions](/docs/compiler/grammar) for the full list.
+See [Token Actions](/docs/compiler/grammar#token-actions) for the full list.
 
 Parsing `"hello"` gives you a `TokenEmbedding`:
 
@@ -162,8 +162,9 @@ control returns to the lexer that called it. It does not need an "exit"
 token, and its own terminal token is not carried over.
 
 It is also the one kind of state that
-[shared tokens](/docs/compiler/grammar) skip: a `%skip *:T_WHITESPACE` says
-nothing about a lexer that decides for itself what it reads.
+[shared tokens](/docs/compiler/grammar#tokens-belonging-to-every-state) skip:
+a `%skip *:T_WHITESPACE` says nothing about a lexer that decides for itself
+what it reads.
 
 This is also the escape hatch for anything a regular expression cannot do:
 heredocs, indentation-sensitive blocks, nested comments.

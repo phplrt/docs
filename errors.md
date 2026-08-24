@@ -358,7 +358,7 @@ public function __toString(): string
 Now every error your language reports looks the same as every error phplrt
 reports, which is exactly what you want.
 
-## Whats Next?
+## What's Next?
 
 `ErrorPrinter` is the two halves below glued together and rendered. Use them
 directly when the picture is not what you are after:

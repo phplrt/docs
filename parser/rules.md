@@ -153,7 +153,7 @@ Variable : <T_NAME> !::T_PARENTHESIS_OPEN:: ;
 Closure  : &::T_FN:: FunctionLiteral() ;
 ```
 
-See [Predicates](/docs/compiler/grammar).
+See [Predicates](/docs/compiler/grammar#predicates).
 
 ## Sequences and Single Values
 

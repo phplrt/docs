@@ -232,4 +232,4 @@ This means:
 - a reducer cannot influence parsing. It cannot look ahead, change what is
   matched next, or fail the parse to force a different alternative. If a
   decision depends on the input, express it in the grammar - that is what
-  [predicates](/docs/parser/rules) are for.
+  [predicates](/docs/parser/rules#predicate) are for.

@@ -327,7 +327,7 @@ while ($parser->analyze($input, Mode::SyntaxCheck) instanceof PartialResult) {
 }
 ```
 
-## Whats Next?
+## What's Next?
 
 - [Grammar Rules](/docs/parser/rules) - the five rule types and what each
   one does.

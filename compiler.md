@@ -98,7 +98,7 @@ are not supported
 ## Splitting A Grammar Up
 
 Real grammars get long. `%include` pulls in another file, and the
-declarations land exactly where to include is written:
+declarations land exactly where the `%include` is written:
 
 ```pp3
 %include grammar/lexemes
@@ -110,7 +110,7 @@ declarations land exactly where to include is written:
 
 A few useful details:
 
-- the path is **relative to the file to include is written in**;
+- the path is **relative to the file the `%include` is written in**;
 - the extension may be omitted - every known format is tried in turn;
 - a grammar reached from several places is read **once**, so a shared
   `lexemes.pp3` can be included by every file that needs it.
@@ -181,7 +181,7 @@ The kinds you are likely to meet:
 | `UnsupportedTransitionException` | A token switching between two named states                                              |
 | `CompilationFailedException`     | The grammar is well-formed but wrong: left recursion, an undefined rule, a broken regex |
 
-## Whats Next?
+## What's Next?
 
 - [Grammar Syntax](/docs/compiler/grammar) - everything a `.pp3` file can say.
 - [Legacy Grammar Syntax](/docs/compiler/legacy-grammar) - everything a `.pp2`

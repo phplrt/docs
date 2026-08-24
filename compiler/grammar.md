@@ -430,7 +430,7 @@ way phplrt calls it:
 ```
 
 By default, the pattern is compiled with `S`, `u`, `s` and `m`. See
-[RegexModifier](/docs/lexer) for what each of them means.
+[Regex Modifiers](/docs/lexer#regex-modifiers) for what each of them means.
 
 ### Compiler Passes
 
@@ -464,7 +464,7 @@ when each priority runs.
 %include grammar/expressions.pp3
 ```
 
-- the path is relative to **the file to include is written in**;
+- the path is relative to **the file the `%include` is written in**;
 - the extension may be omitted;
 - a file included from several places is read **once**, so a shared
   `lexemes.pp3` can be included by everything that needs it.

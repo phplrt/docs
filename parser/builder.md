@@ -240,7 +240,7 @@ A `.pp3` grammar can do all of this itself, without any PHP around it:
 %pragma parser.disable  \Phplrt\Parser\Builder\Compiler\NestedConcatenationParserCompilerPass
 ```
 
-See [Settings](/docs/compiler/grammar).
+See [Settings](/docs/compiler/grammar#settings).
 
 ## The Result
 

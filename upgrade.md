@@ -265,7 +265,7 @@ of them compile unchanged. What no longer works:
 **The old pragmas.** Unification and the error levels are gone; the
 corresponding behaviour is either the default now or is configured in PHP.
 Which settings a grammar may carry is listed under
-[Settings](/docs/compiler/grammar).
+[Settings](/docs/compiler/grammar#settings).
 
 **`$file` and `$state` in a reducer.** Use `$source` and `$rule`, which is an
 `int`. See [PHP in a Grammar](/docs/compiler/code).

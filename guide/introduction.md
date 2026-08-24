@@ -183,7 +183,7 @@ composer require phplrt/exception
 
 [Read more →](/docs/errors)
 
-## Whats Next?
+## What's Next?
 
 - [Quick Start](/docs/guide/quick-start) - build a small language end to end.
 - [Grammar Syntax](/docs/compiler/grammar) - everything a `.pp3` file can say.

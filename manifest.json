@@ -1,22 +1,22 @@
 {
     "Prologue": {
-        "Installation": "installation",
         "Upgrade Guide": "upgrade",
         "Contribution Guide": "contributions"
     },
     "Guide": {
         "Introduction": "guide/introduction",
+        "Installation": "installation",
         "Quick Start": "guide/quick-start",
         "Best Practices": "guide/best-practice"
     },
     "Compiler": {
         "Usage": "compiler",
         "PP3 Grammar Syntax": "compiler/grammar",
-        "PP2 Grammar Syntax (Legacy)": "compiler/legacy-grammar",
         "PHP in a Grammar": "compiler/code",
         "Code Generation": "compiler/generation",
         "Command Line": "compiler/cli",
-        "Automation": "compiler/automation"
+        "Automation": "compiler/automation",
+        "PP2 Grammar Syntax (Legacy)": "compiler/legacy-grammar"
     },
     "Lexer": {
         "Usage": "lexer",
@@ -40,9 +40,9 @@
         "Contracts": "position/contracts"
     },
     "Errors": {
-        "Error Reporting": "errors",
-        "Analysing": "errors/analyzer",
-        "Snippets": "errors/snippet-reader"
+        "Usage": "errors",
+        "Analysing an Error": "errors/analyzer",
+        "Reading a Snippet": "errors/snippet-reader"
     },
     "Examples": {
         "JSON": "examples/json",
