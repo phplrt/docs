@@ -108,10 +108,6 @@ Everything this package throws implements
 `Phplrt\Contracts\Source\Exception\SourceExceptionInterface`, so it is caught
 along with the failures of the source it reads.
 
-| Exception                  | Thrown when                                             |
-|----------------------------|---------------------------------------------------------|
-| `InvalidArgumentException` | a line, a column or a chunk size is below its minimum    |
-
 ## Bring Your Own
 
 The two contracts live in packages of their own, so code that only calculates

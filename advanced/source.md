@@ -194,7 +194,7 @@ final class PsrStreamSourceDriver implements SourceDriverInterface
 ```
 
 When no driver recognizes the argument, `create()` throws a
-`NotCreatableException`.
+`SourceExceptionInterface`.
 
 ## The Interfaces
 

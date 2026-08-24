@@ -170,16 +170,8 @@ error[UnsupportedPragmaException]: Unrecognized pragma "unknown"
 3 | A : <T_A> ;
 ```
 
-The kinds you are likely to meet:
-
-| Exception                        | Cause                                                                                   |
-|----------------------------------|-----------------------------------------------------------------------------------------|
-| `UnexpectedTokenException`       | The grammar file itself is malformed                                                    |
-| `GrammarNotFoundException`       | `%include` points at a file that is not there                                           |
-| `UnsupportedPragmaException`     | An unknown `%pragma`                                                                    |
-| `UnsupportedFormatException`     | A legacy `.pp` file, or an unknown extension                                            |
-| `UnsupportedTransitionException` | A token switching between two named states                                              |
-| `CompilationFailedException`     | The grammar is well-formed but wrong: left recursion, an undefined rule, a broken regex |
+The message above is what printing the exception gives you - see
+[Errors](/docs/basics/errors) for catching and rendering them.
 
 ## What's Next?
 
