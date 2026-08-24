@@ -40,7 +40,9 @@
         "Contracts": "position/contracts"
     },
     "Errors": {
-        "Error Reporting": "errors"
+        "Error Reporting": "errors",
+        "Analysing": "errors/analyzer",
+        "Snippets": "errors/snippet-reader"
     },
     "Examples": {
         "JSON": "examples/json",

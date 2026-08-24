@@ -173,7 +173,6 @@ errors that do not. This component renders them:
 ```
 error[UnexpectedTokenException]: Syntax error, unexpected "+" (T_PLUS), T_NUMBER expected
  --> example.txt:1:5
-  |
 1 | 2 + + 3
   |     ^
 ```
@@ -184,7 +183,7 @@ composer require phplrt/exception
 
 [Read more →](/docs/errors)
 
-## Where To Go Next
+## Whats Next?
 
 - [Quick Start](/docs/guide/quick-start) - build a small language end to end.
 - [Grammar Syntax](/docs/compiler/grammar) - everything a `.pp3` file can say.

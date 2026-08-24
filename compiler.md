@@ -122,7 +122,6 @@ wanted it:
 error[GrammarNotFoundException]: grammar/missing: failed to open stream:
 No such file or directory
  --> /app/grammar.pp3:1:1
-  |
 1 | %include grammar/missing
   | ^^^^^^^^^^^^^^^^^^^^^^^^
 ```
@@ -165,7 +164,6 @@ Everything that can go wrong points at the exact spot in the grammar:
 ```
 error[UnsupportedPragmaException]: Unrecognized pragma "unknown"
  --> /app/grammar.pp3:2:1
-  |
 1 | %token T_A a
 2 | %pragma unknown value
   | ^^^^^^^^^^^^^^^^^^^^^

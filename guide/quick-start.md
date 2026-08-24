@@ -89,7 +89,7 @@ Config : Property()* ;
 also `+` (one or more), `?` (optional) and `{2,5}` (between two and five
 times). `%pragma root` names the rule everything else hangs off.
 
-## Step 3: Say What To Build
+## Step 3: Build The Result
 
 At this point the grammar is complete - it can already tell `name = 4` from
 `name =`. But recognizing text is not the same as getting something out of it.
@@ -267,7 +267,6 @@ $parser->parse(VirtualSource::createFromString('config.txt', <<<'CONF'
 ```
 error[UnexpectedTokenException]: Syntax error, unexpected "=" (T_EQUAL), one of T_BOOLEAN, T_STRING, T_NUMBER expected
  --> config.txt:2:11
-  |
 1 | name = "phplrt"
 2 | version = = 4
   |           ^
@@ -347,7 +346,7 @@ $parser->parse(StringSource::createFromString('debug = true'))[0]->name; // "deb
 Add the generation call to your build script or a console command, and you
 are done.
 
-## Step 7: Give The Parser Something To Work With
+## Step 7: Extend The Parser
 
 So far the config can only say what is written in it. Real formats reach
 outside: environment variables, includes, a base directory, a registry of
@@ -450,7 +449,6 @@ error from your code reads exactly like one from the parser:
 ```
 error[UnknownVariableException]: Unknown variable "NOPE"
  --> config.txt:2:7
-  |
 1 | name = "phplrt"
 2 | env = ${NOPE}
   |       ^^^^^^^
@@ -461,7 +459,7 @@ error[UnknownVariableException]: Unknown variable "NOPE"
 [Error Reporting](/docs/errors). Subclassing has a few rules of its own, and
 they are collected in [Best Practices](/docs/guide/best-practice).
 
-## Where To Go Next
+## Whats Next?
 
 - [Grammar Syntax](/docs/compiler/grammar) - the full `.pp3` reference.
 - [PHP in a Grammar](/docs/compiler/code) - reducers, the variables they see

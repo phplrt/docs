@@ -183,7 +183,6 @@ try {
 ```
 error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
  --> expr.txt:2:1
-  |
 1 | 1 + 2
 2 | 3 * (4 + )
   | ^
@@ -264,7 +263,6 @@ echo $result->error;
 ```
 error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER), T_PLUS expected
  --> expr.txt:2:1
-  |
 1 | 1 + 2
 2 | 3 + } 4
   | ^

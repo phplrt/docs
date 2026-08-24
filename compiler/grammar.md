@@ -103,7 +103,6 @@ noticed:
 ```
 error[UnexpectedTokenException]: Syntax error, unexpected "->" (T_PATTERN)
  --> /app/grammar.pp3:1:20
-  |
 1 | %token T_QUOTE  "  -> string
   |                    ^^
 ```
