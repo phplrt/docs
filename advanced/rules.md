@@ -11,8 +11,8 @@ $grammar = [
 ];
 ```
 
-There are five rule classes, and between them they cover everything EBNF can
-say. You will usually get them from a
+Between them the rule classes cover everything EBNF can say. You will usually
+get them from a
 [grammar file](/docs/basics/grammar) or
 [the builder](/docs/advanced/builder), but it helps to know what each one does.
 
