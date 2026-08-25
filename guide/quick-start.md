@@ -331,7 +331,7 @@ readonly class CompiledConfigParser extends \Phplrt\Parser\Parser
     private static function reduceString(\Phplrt\Parser\Context $ctx, mixed $children): mixed
     {
         // The variables below are declared by the compiler
-        $offset = $ctx->token->offset;
+        $offset = $ctx->begin;
 
         return new \App\Ast\Literal(\substr($children->value, 1, -1), $offset);
     }
@@ -389,7 +389,7 @@ private function reduceReference(\Phplrt\Parser\Context $ctx, mixed $children): 
 {
     // The variables below are declared by the compiler
     $source = $ctx->source;
-    $offset = $ctx->token->offset;
+    $offset = $ctx->begin;
 
     return $this->reference($children->captures[0], $offset, $source);
 }

@@ -66,19 +66,26 @@ $number->setReducer(static fn(Context $ctx, mixed $children): int
 
 Inside a code block, these are available:
 
-| Variable    | What it is                                             |
-|-------------|--------------------------------------------------------|
-| `$children` | What the rule matched. **This is the important one.**  |
-| `$ctx`      | The full `Context` object                              |
-| `$token`    | The last token the rule read, or `null`                |
-| `$offset`   | Where that token starts, in bytes                      |
-| `$source`   | The source being parsed                                |
-| `$content`  | The whole content of that source                       |
-| `$rule`     | The id of the rule being reduced                       |
+| Variable              | What it is                                            |
+|-----------------------|-------------------------------------------------------|
+| `$children`           | What the rule matched. **This is the important one.** |
+| `$ctx`                | The full `Context` object                             |
+| `$offset` or `$begin` | Where the rule starts, in bytes                       |
+| `$length`             | How many bytes the rule covers                        |
+| `$end`                | Where the rule ends - `$offset + $length`             |
+| `$source`             | The source being parsed                               |
+| `$content`            | The whole content of that source                      |
+| `$rule`               | The id of the rule being reduced                      |
 
 All except `$children` and `$ctx` are shorthands the compiler expands for
-you - `$offset` becomes `$ctx->token->offset`, and so on. They are only
-declared if you use them, so there is no cost to the ones you do not.
+you - `$offset` becomes `$ctx->begin`, and so on. They are only declared if
+you use them, so there is no cost to the ones you do not.
+
+The position covers the tokens the rule **kept**, so a token dropped by
+`::T_NAME::` counts for nothing: the span of `::T_LP:: Expr() ::T_RP::`
+starts and ends where `Expr` does, parentheses aside. A rule that kept no
+tokens at all - an optional that matched nothing, say - is empty at the
+position the reading has reached, and its `$length` is zero.
 
 ## What `$children` Contains
 
@@ -141,7 +148,7 @@ Expression -> {
 
 ## What A Token Is
 
-Most of what a reducer is handed is tokens:
+Most of what a reducer is handed in `$children` is tokens:
 
 ```php
 $token->id;      // int    - what the token is, compared against a constant
@@ -333,7 +340,8 @@ analysis is:
 ```php
 static function (Context $ctx, mixed $children): mixed {
     $ctx->rule;   // int - the id of the rule being reduced
-    $ctx->token;  // the last token this rule read, or null
+    $ctx->begin;  // int - where this rule starts, in bytes
+    $ctx->length; // int - how many bytes it covers
     $ctx->source; // the source being parsed
 
     return null;
@@ -341,8 +349,8 @@ static function (Context $ctx, mixed $children): mixed {
 ```
 
 In a `.pp3` reducer you rarely touch `$ctx` directly, because the common
-fields have shorter names - `$token`, `$offset`, `$source`, listed
-above.
+fields have shorter names - `$offset`, `$length`, `$end`, `$source`, listed
+above, and `$end` is worked out for you.
 
 ## Returning Nothing
 
