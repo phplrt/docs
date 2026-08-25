@@ -48,7 +48,7 @@ longest one, so a longer literal goes above a shorter one:
 %token T_STAR  \*
 ```
 
-See [Order Matters](/docs/advanced/lexer#order-matters).
+See [Order Matters](/docs/advanced/lexer-builder#order-matters).
 
 **A pattern cannot contain a literal space** - whitespace separates the parts
 of the declaration. Write `\x20` or `\s` instead.
@@ -139,7 +139,7 @@ Number -> { return (int) $children->value; }
 ```
 
 The variables a body may use are the same in both formats - see
-[PHP in a Grammar](/docs/basics/grammar-php).
+[Results and Reducers](/docs/basics/reducers).
 
 ### A Class Name
 
@@ -250,7 +250,7 @@ error[UnsupportedPragmaException]: Unrecognized pragma "lexer.pcre.flag"
 
 Everything else - PCRE modifiers, compiler passes - is configured in PHP
 through [the lexer builder](/docs/advanced/lexer) and
-[the parser builder](/docs/advanced/builder).
+[the parser builder](/docs/advanced/parser-builder).
 
 ## Including Other Files
 

@@ -1,9 +1,12 @@
 # Examples
 
-Nine complete grammars. Each one is short enough to read in a sitting and
-close enough to a real language to be worth stealing from, and each page
-carries the grammar in full, the PHP that runs it, and a note about the one
-thing it is there to show.
+A few complete grammars, picked one per idea. Each one is short enough to read
+in a sitting and close enough to a real language to be worth stealing from,
+and each page carries the grammar in full, the PHP that runs it, and a note
+about the one thing it is there to show.
+
+This is a selection and not the whole set: many more grammars for real
+languages live in [phplrt/grammars](https://github.com/phplrt/grammars).
 
 | Example | What it shows |
 |---------|---------------|
@@ -37,7 +40,7 @@ $parser = new Compiler()
 
 [Quick Start](/docs/guide/quick-start) walks through that from the beginning.
 
-> **25+ more grammars.** [phplrt/grammars](https://github.com/phplrt/grammars)
+> **More grammars.** [phplrt/grammars](https://github.com/phplrt/grammars)
 > collects ready to read grammars for real languages - JSON5, TSV, semantic
 > versions, DQL, PHQL, JMS types, PSR-5 and Doctrine annotations, Symfony
 > expressions, Go! AOP pointcuts, Praspel contracts and more - each with sample

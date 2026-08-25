@@ -170,4 +170,4 @@ if ($expected !== $actual) {
 }
 ```
 
-[Code Generation](/docs/basics/generation) covers the API this leans on.
+[Compiling a Grammar](/docs/basics/compiler) covers the API this leans on.

@@ -422,5 +422,5 @@ interface RuntimeExceptionInterface extends LexerExceptionInterface
 ## 4. See Also
 
 - [Usage](/docs/advanced/lexer) - the phplrt lexer itself.
-- [Tokens and Channels](/docs/basics/tokens) - what a lexer does with channels.
+- [Lexer](/docs/advanced/lexer#channels) - what a lexer does with channels.
 - [Parser Contracts](/docs/contracts/parser) - what consumes these tokens.

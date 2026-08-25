@@ -375,7 +375,7 @@ Reference -> { return $this->reference($children->captures[0], $offset, $source)
 
 The pattern has a capturing group, and `$children->captures[0]` is what that
 group matched - the name alone, without the `${}` around it. More on captures
-in [Tokens and Channels](/docs/basics/tokens).
+in [What A Token Is](/docs/basics/reducers#what-a-token-is).
 
 Regenerate, and notice what the compiler did with the new rule:
 
@@ -462,10 +462,10 @@ they are collected in [Best Practices](/docs/basics/best-practice).
 ## What's Next?
 
 - [PP3 Grammar Syntax](/docs/basics/grammar) - the full `.pp3` reference.
-- [PHP in a Grammar](/docs/basics/grammar-php) - reducers, the variables they see
+- [Results and Reducers](/docs/basics/reducers) - reducers, the variables they see
   and what `$children` holds.
 - [Lexer](/docs/advanced/lexer) - channels, captures and nested lexers.
-- [Code Generation](/docs/basics/generation) - namespaces, imports, and
+- [Compiling a Grammar](/docs/basics/compiler) - namespaces, imports, and
   what the generated file looks like.
 - [Best Practices](/docs/basics/best-practice) - what to do with the parser
   once it works.

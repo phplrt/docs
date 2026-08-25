@@ -111,7 +111,7 @@ what to call itself in an error message.
 composer require phplrt/source
 ```
 
-[Read more →](/docs/advanced/source)
+[Read more →](/docs/basics/source)
 
 ### Lexer
 
@@ -151,7 +151,7 @@ directly if you would rather build your grammar in code than in a file.
 composer require phplrt/lexer-builder phplrt/parser-builder
 ```
 
-[Read more →](/docs/advanced/builder)
+[Read more →](/docs/advanced/parser-builder)
 
 ### Compiler
 

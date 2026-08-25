@@ -123,4 +123,4 @@ $analyzer = new Analyzer(new PositionFactory(chunkSize: 65536));
 ```
 
 A position is the line and the column of the *beginning* of the fragment, both
-counted from one. See [Position](/docs/advanced/position) for the details.
+counted from one. See [Position](/docs/basics/position) for the details.

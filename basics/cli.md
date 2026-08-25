@@ -140,7 +140,7 @@ Two of those lines are worth reading every time.
 
 **`Tokens` grows by one.** Three tokens were declared and four came out: the
 compiler appends a catch-all so that unrecognized input becomes an `Unknown`
-token instead of an error. See [Code Generation](/docs/basics/generation).
+token instead of an error. See [Compiling a Grammar](/docs/basics/compiler).
 
 **`Rules` shrinks - and how much it shrinks matters.** Folding transition
 rules away is normal. Losing almost everything is not:
@@ -228,7 +228,7 @@ $parser = new App\Parser\SumParser();
 
 Imports are what makes the PHP inside a grammar readable - `new Node(...)`
 instead of `new \App\Ast\Node(...)` - at the price of a grammar that only
-works when it is generated. See [PHP in a Grammar](/docs/basics/grammar-php).
+works when it is generated. See [Results and Reducers](/docs/basics/reducers).
 
 **Leave `--class` out** and the file returns an anonymous parser instead of
 declaring anything:
@@ -247,7 +247,7 @@ $parser = require __DIR__ . '/../build/parser.php';
 
 Use the named form for anything autoloaded, the anonymous one for a build
 artifact you do not want in the class namespace at all.
-[Code Generation](/docs/basics/generation) covers what comes out of either.
+[Compiling a Grammar](/docs/basics/compiler) covers what comes out of either.
 
 ## Running It From A Script
 
@@ -277,5 +277,5 @@ that is a few lines of PHP:
 - loading several grammars into one parser;
 - getting the code as a string without writing it, to diff or to reformat.
 
-All of it is in [Code Generation](/docs/basics/generation), and the compiler
+All of it is in [Compiling a Grammar](/docs/basics/compiler), and the compiler
 itself is described in [Compiling a Grammar](/docs/basics/compiler).

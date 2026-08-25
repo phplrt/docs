@@ -211,7 +211,7 @@ interface PositionFactoryInterface
 
 ## 4. See Also
 
-- [Usage](/docs/advanced/position) - the phplrt implementation, and what it does about
+- [Usage](/docs/basics/position) - the phplrt implementation, and what it does about
   a large source.
 - [Source Contracts](/docs/contracts/source) - what a position is calculated
   over.

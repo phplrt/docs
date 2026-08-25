@@ -7,7 +7,7 @@ errors raised along the way.
 The goal is to let anything that uses a parser - a template engine, a
 configuration loader, a rule engine - depend on the ability to parse rather
 than on a particular parser, whether it is handwritten, assembled at runtime
-or [generated from a grammar](/docs/basics/generation).
+or [generated from a grammar](/docs/basics/compiler).
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be

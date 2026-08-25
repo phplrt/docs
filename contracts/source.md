@@ -255,6 +255,6 @@ interface SourceFactoryInterface
 
 ## 4. See Also
 
-- [Usage](/docs/advanced/source) - the phplrt sources and the factory behind them.
+- [Usage](/docs/basics/source) - the phplrt sources and the factory behind them.
 - [Position Contracts](/docs/contracts/position) - naming a place inside a
   source.

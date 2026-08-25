@@ -40,7 +40,7 @@ $parser = new Compiler()
     ->getParser();
 ```
 
-or [generate the code once](/docs/basics/generation) and use the class:
+or [generate the code once](/docs/basics/compiler) and use the class:
 
 ```php
 $parser = new App\Calculator\CalculatorParser();
@@ -88,9 +88,8 @@ This is exactly what the compiler generates for you - it just also works out
 what can be told about the grammar ahead of time, which makes it considerably
 faster.
 
-The rule classes are described in [Grammar Rules](/docs/advanced/rules), and
-the friendlier way to produce this array is
-[the parser builder](/docs/advanced/builder).
+The rule classes, and the friendlier way to produce this array, are
+[the parser builder](/docs/advanced/parser-builder).
 
 ## How It Reads
 
@@ -334,9 +333,8 @@ while ($parser->analyze($input, Mode::SyntaxCheck) instanceof PartialResult) {
 
 ## What's Next?
 
-- [Grammar Rules](/docs/advanced/rules) - the five rule types and what each
-  one does.
-- [Building a Grammar](/docs/advanced/builder) - describing rules in PHP.
+- [Parser Builder](/docs/advanced/parser-builder) - the rule types, and
+  describing a grammar in PHP.
 - [Results and Reducers](/docs/basics/reducers) - turning a parse into an AST.
 - [Contracts](/docs/contracts/parser) - `phplrt/parser-contracts`, for code
   that needs a parser without needing this one.

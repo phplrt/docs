@@ -1,146 +1,17 @@
 # Lexer
 
 > This package can be installed separately with `composer require phplrt/lexer`
->
-> Describing a lexer in PHP additionally needs
-> `composer require phplrt/lexer-builder`
 
 The lexer is the first half of reading source code: it turns a stream of
 characters into a stream of **tokens**. `23 + 42` becomes "a number, a plus,
 a number" - and the parser never has to look at a single character again.
 
-## A First Lexer
+What it reads is fixed by the time it exists: a lexer is one compiled regular
+expression plus a couple of tables, produced by the
+[lexer builder](/docs/advanced/lexer-builder) or by the
+[grammar compiler](/docs/basics/compiler). This page is about running one.
 
-Describe the tokens, build the lexer, run it:
-
-```php
-use Phplrt\Lexer\Builder\LexerBuilder;
-use Phplrt\Source\StringSource;
-
-$builder = new LexerBuilder();
-$builder->addPattern('\d++', 'T_DIGIT');
-$builder->addValue('+', 'T_PLUS');
-$builder->addPattern('\s++', 'T_WHITESPACE');
-
-$lexer = $builder->build()
-    ->toLexer();
-
-foreach ($lexer->lex(StringSource::createFromString('23 + 42')) as $token) {
-    echo $token, "\n";
-}
-```
-
-```
-"23" (T_DIGIT)
-" " (T_WHITESPACE)
-"+" (T_PLUS)
-" " (T_WHITESPACE)
-"42" (T_DIGIT)
-end of input
-```
-
-Two ways to describe a token:
-
-- `addPattern('\d++')` - a **regular expression**;
-- `addValue('+')` - a **literal string**, escaped for you. `addValue('+')` and
-  `addPattern('\+')` are the same thing, but the first one is harder to get
-  wrong.
-
-The last token is always `end of input`. It is how the parser knows the
-source has been read to the end.
-
-## Order Matters
-
-The lexer tries the patterns from top to bottom and takes the **first** one
-that matches - not the longest. So this does not do what it looks like:
-
-```php
-$builder->addValue('*', 'T_STAR');
-$builder->addValue('**', 'T_POW');   // never matched!
-```
-
-`**` is read as two `T_STAR` tokens, because `T_STAR` was declared first.
-Put the longer literal above the shorter one:
-
-```php
-$builder->addValue('**', 'T_POW');   // ✔
-$builder->addValue('*', 'T_STAR');
-```
-
-The same applies to keywords and identifiers - declare `if` before
-`[a-z]+`, or `if` will always be read as an identifier.
-
-## Hiding Whitespace
-
-You almost never want whitespace in a grammar. Mark it as **hidden** and it is
-still recognized (so the offsets stay right) but it is left out of the stream
-entirely:
-
-```php
-$builder->addPattern('\s++')
-    ->hide();
-$builder->addPattern('//[^\n]*+')
-    ->hide(); // line comments too
-```
-
-Note that the token above has no name. A hidden token is not referred to by
-anything, so naming it is optional.
-
-`hide()` is shorthand for putting the token on the `Hidden` channel, and that
-is the one channel a lexer leaves out by default - see
-[Tokens and Channels](/docs/basics/tokens) for the general case, including how
-to have the hidden tokens reported after all.
-
-## Naming A Piece Of A Pattern
-
-A piece of a pattern that keeps coming back is named once and referred to by
-`(?&NAME)`:
-
-```php
-$builder->addFragment('DIGIT', '[0-9]');
-$builder->addFragment('EXP', '[eE][+-]?(?&DIGIT)++');
-
-$builder->addPattern('(?&DIGIT)++(\.(?&DIGIT)++)?(?&EXP)?', 'T_NUMBER');
-```
-
-The pieces are written into the patterns while the lexer is built, so what it
-compiles is what they spell out:
-
-```
-(?:[0-9])++(\.(?:[0-9])++)?(?:[eE][+-]?(?:[0-9])++)?
-```
-
-A fragment recognizes nothing on its own and becomes no token. It is written
-in as a group of its own, so a quantifier after `(?&NAME)` counts the whole
-piece; it may be written of another fragment, but not of itself; and it
-reaches the patterns of every [nested lexer](/docs/advanced/embedding), in
-whatever order it is added.
-
-A name that no fragment is added under is left alone in case the pattern
-captures a subpattern under it - which is what `(?&NAME)` means to PCRE - and
-is reported otherwise:
-
-```php
-$builder->addPattern('\((?<in>[^()]|(?&in))*+\)', 'T_NESTED'); // ✔ left alone
-$builder->addPattern('(?&DIGT)++', 'T_NUMBER');               // ✘ reported
-```
-
-## Regex Modifiers
-
-By default, patterns are compiled with `S`, `u`, `s` and `m`. Add or remove
-modifiers for the whole lexer:
-
-```php
-use Phplrt\Lexer\Builder\Definition\RegexModifier;
-
-$builder->enable(RegexModifier::Caseless);  // /i
-$builder->disable(RegexModifier::Utf8);     // no /u
-
-$builder->addValue('true', 'T_TRUE');
-// now matches "true", "TRUE" and "True"
-```
-
-## What You Get Back
+## Reading A Source
 
 `lex()` returns a list of tokens. Every token knows what it is, what it says
 and where it was:
@@ -156,6 +27,9 @@ foreach ($lexer->lex(StringSource::createFromString('23 + 42')) as $token) {
 }
 ```
 
+The last token is always `end of input`. It is how the parser knows the source
+has been read to the end.
+
 You can also start somewhere other than the beginning:
 
 ```php
@@ -163,7 +37,71 @@ $lexer->lex(StringSource::createFromString('12 34'), offset: 3);
 // only "34" and the end of input
 ```
 
-More on this in [Tokens and Channels](/docs/basics/tokens).
+What is on a token, and what to do with it, is
+[What A Token Is](/docs/basics/reducers#what-a-token-is).
+
+## Channels
+
+A lexer reports every channel except the ones it is told to skip, and by
+default that is `Hidden` alone:
+
+```php
+use Phplrt\Lexer\Lexer;
+
+Lexer::DEFAULT_SKIP_CHANNELS; // [Channel::Hidden]
+```
+
+Nothing stands between the lexer and the grammar, so this is also the answer to
+"what does the parser see": whatever the lexer reports.
+
+The list is a setting of the lexer, so it goes where the lexer is put together:
+
+```php
+use Phplrt\Lexer\Builder\Transformer\RuntimeLexerTransformer;
+
+$result = $builder->build();
+
+// Reports everything but the hidden tokens
+$lexer = $result->toLexer();
+
+// Reports everything, hidden tokens included
+$verbose = new RuntimeLexerTransformer(skip: [])
+    ->transform($result);
+```
+
+Channels are matched **by name**, so a custom one is skipped by naming it - the
+instance you construct does not have to be the one the token carries:
+
+```php
+use Phplrt\Contracts\Lexer\Channel;
+use Phplrt\Contracts\Lexer\UserDefinedChannel;
+
+$parsing = new RuntimeLexerTransformer(skip: [
+    Channel::Hidden,
+    new UserDefinedChannel('comments'),
+])->transform($result);
+```
+
+One description therefore gives you as many lexers as there are readers of the
+source: one leaving the comments out for the parser, and one reporting them for
+the tool that wants them.
+
+That is where the list ends up anyway - `Lexer` takes it as an argument of its
+own, so a lexer assembled without the builder is configured the same way:
+
+```php
+use Phplrt\Lexer\Lexer;
+
+$lexer = new Lexer(
+    pattern: $result->pattern,
+    channels: $result->channels,
+    names: $result->names,
+    skip: [],
+);
+```
+
+Skipping happens while the source is being read, so a token nobody is going to
+see is not built in the first place.
 
 ## Unrecognized Input
 
@@ -194,97 +132,20 @@ only report one problem, while an editor or a linter usually wants to see
 the whole file. The parser is the one that decides an unknown token is an
 error, and it does so with a message pointing at the exact spot.
 
-## Reusing The Result
+## System Tokens
 
-`build()` gives you a `LexerBuilderResult` - the compiled description - and
-`toLexer()` turns that into a runnable lexer:
+Two tokens are produced by the lexer rather than declared, and they use
+negative identifiers so they can never collide with yours:
 
-```php
-$result = $builder->build();
-
-$result->pattern;  // the single regex the whole lexer compiles down to
-$result->names;    // [0 => 'T_DIGIT', 1 => 'T_PLUS', ...]
-$result->channels; // [2 => 'Hidden', ...]
-
-$lexer = $result->toLexer();
-```
-
-Building is not free - it validates every pattern, drops unreachable tokens
-and merges everything into one big regular expression. Do it once and keep
-the lexer around, or better still,
-[generate the code](/docs/basics/generation) and skip building entirely.
-
-## How The Pattern Is Built
-
-All the token definitions compile into a single PCRE pattern, and which token
-matched is recorded with
-[`(*MARK:n)`](https://www.pcre.org/current/doc/html/pcre2pattern.html):
-
-```
-/\G(?|(?:(?:\d++)(*MARK:0))|(?:(?:\s++)(*MARK:1))|(?:(?:[^\s]++)(*MARK:2)))/Ssum
-```
-
-One pass over the input, one regex, no per-token loop - this is where the
-lexer's speed comes from. The last branch is the catch-all that produces
-`Unknown` tokens.
-
-`MarkersRegexGenerator` does this, and it is swappable if you ever need a
-different strategy:
-
-```php
-use Phplrt\Lexer\Builder\Analysis\RegexConstructionLexerAnalysisPass;
-use Phplrt\Lexer\Builder\Regex\RegexGeneratorInterface;
-
-final class MyRegexGenerator implements RegexGeneratorInterface
-{
-    public function generate(array $tokens, array $flags): string
-    {
-        // $tokens is a map of token id => TokenDefinition
-    }
-}
-
-$builder->addAnalysisPass(
-    new RegexConstructionLexerAnalysisPass(new MyRegexGenerator()),
-);
-```
-
-## Writing It In A Grammar Instead
-
-Everything above has a shorter spelling in a `.pp3` file:
-
-```pp3
-%fragment DIGIT      [0-9]
-
-%token T_DIGIT       (?&DIGIT)++
-%token T_PLUS        \+
-%skip  T_WHITESPACE  \s++
-```
-
-A token nothing refers to by name does not have to be declared at all - a rule
-declares it where it reads it, and the two spellings are the two methods above:
-
-```pp3
-Sum  : <T_DIGIT> "+" <T_DIGIT> ;          // addValue('+')
-Expr : <T_DIGIT> /and|or/ <T_DIGIT> ;     // addPattern('and|or')
-```
-
-The modifiers and the compiler passes are settings of the grammar there, so a
-grammar carries the way it wants to be compiled:
-
-```pp3
-%pragma lexer.pcre.flag  Caseless
-%pragma lexer.check      \App\Grammar\MyValidationPass
-```
-
-That is usually where you want to be - see
-[Compiling a Grammar](/docs/basics/compiler). The builder API is for the cases where
-the token list is not known in advance: generated from a config file, a
-database, a plugin system.
+| Token             | Identifier | Channel      |
+|-------------------|------------|--------------|
+| `EndOfInputToken` | `-1`       | `EndOfInput` |
+| `UnknownToken`    | `-2`       | `Unknown`    |
 
 ## What's Next?
 
-- [Tokens and Channels](/docs/basics/tokens) - the token API, channels and
-  captures.
+- [Lexer Builder](/docs/advanced/lexer-builder) - describing the tokens this
+  reads, and the channels they go on.
 - [Nested Lexers](/docs/advanced/embedding) - string interpolation, PHP inside
   HTML and other "a different language starts here" situations.
 - [Contracts](/docs/contracts/lexer) - `phplrt/lexer-contracts`, for code that

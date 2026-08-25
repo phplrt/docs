@@ -55,7 +55,7 @@ if ($token->getName() === 'T_DIGIT') { /* ... */ }
 if ($token->id === MyParser::T_DIGIT) { /* ... */ }
 ```
 
-[Generated parsers](/docs/basics/generation) expose the ids as class
+[Generated parsers](/docs/basics/compiler) expose the ids as class
 constants, so you do not have to track the numbers yourself.
 
 ### The Lexer Is Built, Not Configured
@@ -92,7 +92,7 @@ $lexer = $builder->build()
 > Likelihood Of Impact: **Medium**
 
 The lexer no longer takes a list of names to skip. Every token carries a
-[channel](/docs/basics/tokens), and the lexer reports every channel except the
+[channel](/docs/advanced/lexer#channels), and the lexer reports every channel except the
 ones it is told to leave out - `Hidden` alone, unless you say otherwise.
 
 ```php
@@ -128,7 +128,7 @@ $parser = new Parser(
 
 Rules are keyed by **integers** rather than by name, and they refer to each
 other by index. In practice you do not write this array by hand - see
-[the parser builder](/docs/advanced/builder).
+[the parser builder](/docs/advanced/parser-builder).
 
 ### BuilderInterface Became Per-Rule Reducers
 
@@ -230,7 +230,7 @@ VirtualSource::createFromString('x.txt', '2 + 2'); // a string with a name
 `SourceFactory::createDefault()` is there if you need the "figure out what this
 is" behaviour, now behind a single `create()` method.
 
-See [Source](/docs/advanced/source).
+See [Source](/docs/basics/source).
 
 ### Positions Are Calculated By A Factory
 
@@ -244,7 +244,7 @@ and the column alone - the offset it was built from is not a part of it, and
 offset past the end of the source, and `Interval`, `IntervalFactoryTrait` and
 `PositionFactoryTrait` are gone.
 
-See [Position](/docs/advanced/position).
+See [Position](/docs/basics/position).
 
 ### The `.pp` Format Is No Longer Read
 
@@ -268,7 +268,7 @@ Which settings a grammar may carry is listed under
 [Settings](/docs/basics/grammar#settings).
 
 **`$file` and `$state` in a reducer.** Use `$source` and `$rule`, which is an
-`int`. See [PHP in a Grammar](/docs/basics/grammar-php).
+`int`. See [Results and Reducers](/docs/basics/reducers).
 
 **Left recursion**, which is now rejected at build time. It never worked at
 runtime either, but 3.x would let you compile it. Rewrite as a repetition:
@@ -303,4 +303,4 @@ relied on nesting, return an object instead. See
 
 Code generation, dropped in 3.0 in favour of a config array, is back and now
 emits the lexer, the token constants and the reducers as a real class - see
-[Code Generation](/docs/basics/generation).
+[Compiling a Grammar](/docs/basics/compiler).

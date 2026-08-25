@@ -1,9 +1,9 @@
-# Building a Grammar
+# Parser Builder
 
 > This package can be installed separately with
 > `composer require phplrt/parser-builder`
 
-Writing the [rule array](/docs/advanced/rules) by hand works, but you have to
+Writing the [rule array](#the-rules) by hand works, but you have to
 keep track of indices yourself, and one inserted rule renumbers everything.
 The builder does that for you: you describe rules as objects, and it turns
 them into the flat array - validating and optimizing along the way.
@@ -102,6 +102,25 @@ grammar still works. By **name** is useful when the token is declared
 elsewhere - the reference is resolved when the grammar is built, so the order
 of declaration does not matter.
 
+What comes out is a flat array of `Phplrt\Parser\Grammar\*` objects referring
+to each other by index - the same array a
+[generated parser](/docs/basics/compiler) carries, which is where you will
+meet these class names if you ever read one:
+
+| Method                 | Class           | Value it produces      |
+|------------------------|-----------------|------------------------|
+| `addTokenReference()`  | `Lexeme`        | the token              |
+| `addConcatenation()`   | `Concatenation` | a list                 |
+| `addRepetition()`      | `Repetition`    | a list                 |
+| `addAlternation()`     | `Alternation`   | whichever matched      |
+| `addOptional()`        | `Optional`      | the rule, or nothing   |
+| `addPredicate()`       | `Predicate`     | nothing - it only looks ahead |
+
+`Lexeme` is the only one matched against the input; the rest are matched by
+means of other rules. The two producing a list are the reason `$children` is
+sometimes an array - see
+[What `$children` Contains](/docs/basics/reducers#what-children-contains).
+
 ## Naming Rules and Referring To Them
 
 Every `add*()` method takes an optional name, and a named rule can be pointed
@@ -143,7 +162,7 @@ $number = $grammar->addTokenReference('T_DIGIT', 'Number')
 ```
 
 Any callable works. But note: a closure cannot be written into a generated
-file. If you plan to [generate code](/docs/basics/generation), define the
+file. If you plan to [generate code](/docs/basics/compiler), define the
 reducer as PHP source instead:
 
 ```php
@@ -219,8 +238,8 @@ The priorities, in the order they run:
 
 `LexerBuilder` runs the same four. Normalizing is where what a token
 definition refers to is written into it, so a
-[named piece of a pattern](/docs/advanced/lexer#naming-a-piece-of-a-pattern) is
-already expanded by the time anything checks the pattern it belongs to.
+[fragment](/docs/advanced/lexer-builder#fragments) is already expanded by the time
+anything checks the pattern it belongs to.
 
 A built-in pass can be dropped by name, which is how you opt out of an
 optimization that does not suit your grammar:
