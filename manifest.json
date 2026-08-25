@@ -9,7 +9,7 @@
         "Quick Start": "guide/quick-start"
     },
     "The Basics": {
-        "PP3 Grammar": "basics/grammar",
+        "Grammar": "basics/grammar",
         "Tokens & Channels": "basics/tokens",
         "PHP Injections": "basics/grammar-php",
         "Results and Reducers": "basics/reducers",

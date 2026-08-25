@@ -4,8 +4,10 @@ A grammar file describes a language: the words it is made of, and the order
 they may appear in. Here is one in full:
 
 ```pp3
-// The words
+// Any space char should be ignored
 %skip  T_WHITESPACE  \s++
+
+// What a number and a plus looks like
 %token T_DIGIT       \d++
 %token T_PLUS        \+
 
@@ -13,7 +15,15 @@ they may appear in. Here is one in full:
 %pragma root Sum
 
 // The sentences
-Sum : <T_DIGIT> (::T_PLUS:: <T_DIGIT>)* ;
+Sum 
+  : <T_DIGIT> (::T_PLUS:: <T_DIGIT>)*
+  // Equivalent to the following:
+  // 2
+  // 2 + 3
+  // 2 + 3 + 4
+  // 2 + 3 + 4 + 5
+  // 2 + 3 + 4 + 5 + ...etc
+  ;
 ```
 
 Save it as `grammar.pp3` and it is ready to use:
