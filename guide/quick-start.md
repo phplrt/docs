@@ -278,11 +278,16 @@ anything, use `analyze()`:
 
 ```php
 use Phplrt\Parser\Analysis\Mode;
-use Phplrt\Parser\Analysis\Result\SuccessfulResult;
 
-$parser->analyze(StringSource::createFromString('name = "x"'), Mode::SyntaxCheck) instanceof SuccessfulResult; // true
-$parser->analyze(StringSource::createFromString('name ='), Mode::SyntaxCheck) instanceof SuccessfulResult;     // false
+$parser->analyze(StringSource::createFromString('name = "x"'), Mode::SyntaxCheck);
+// SuccessfulResult - the grammar read the source in full
+
+$parser->analyze(StringSource::createFromString('name ='), Mode::SyntaxCheck);
+// PartialResult - it stopped at the end of what it understood
 ```
+
+> Note that `PartialResult` **extends** `SuccessfulResult`, so
+"was it read in full" is `!($result instanceof PartialResult)`.
 
 It also tells you *how much* of the input is valid and what stands in the way,
 which is what you want for an editor or a prompt - see
@@ -404,7 +409,25 @@ use App\Ast\Literal;
 use Phplrt\Contracts\Source\ReadableInterface;
 use Phplrt\Exception\ErrorPrinter;
 
-final class UnknownVariableException extends \InvalidArgumentException {}
+final class UnknownVariableException extends \InvalidArgumentException
+{
+    public function __construct(
+        string $name,
+        private readonly ReadableInterface $source,
+        private readonly int $offset,
+        private readonly int $length,
+    ) {
+        parent::__construct(\sprintf('Unknown variable "%s"', $name));
+    }
+
+    public function __toString(): string
+    {
+        return (string) new ErrorPrinter()
+            ->print($this)
+            ->withSource($this->source)
+            ->withInterval($this->offset, $this->length);
+    }
+}
 
 final readonly class ConfigParser extends CompiledConfigParser
 {
@@ -420,10 +443,7 @@ final readonly class ConfigParser extends CompiledConfigParser
     protected function reference(string $name, int $offset, ReadableInterface $source): Literal
     {
         if (!isset($this->variables[$name])) {
-            throw new UnknownVariableException((string) new ErrorPrinter()
-                ->print($source, $offset, \strlen($name) + 3)
-                ->withMessage(\sprintf('Unknown variable "%s"', $name))
-                ->withClass('UnknownVariableException'));
+            throw new UnknownVariableException($name, $source, $offset, \strlen($name) + 3);
         }
 
         return new Literal($this->variables[$name], $offset);
@@ -455,9 +475,10 @@ error[UnknownVariableException]: Unknown variable "NOPE"
 3 |
 ```
 
-`ErrorPrinter` renders any offset in any source - see
-[Error Reporting](/docs/basics/errors). Subclassing has a few rules of its own, and
-they are collected in [Best Practices](/docs/basics/best-practice).
+`print()` takes the exception and reads the message and the name off it, so
+only the place has to be pointed at - see
+[Error Reporting](/docs/basics/errors). Subclassing has a few rules of its own,
+and they are collected in [Best Practices](/docs/basics/best-practice).
 
 ## What's Next?
 
