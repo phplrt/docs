@@ -550,14 +550,14 @@ does:
 
 | Placeholder       | Is                                                |
 |-------------------|---------------------------------------------------|
-| `{token}`         | the token the reading broke on, described in full |
-| `{name}`          | the name of that token                            |
-| `{value}`         | the text that token is read from                  |
-| `{offset}`        | the offset in bytes the reading broke at          |
-| `{line}`          | the source line the reading broke on              |
-| `{column}`        | the column within that line                       |
-| `{expected}`      | `T_OPEN, T_CLOSE, T_COMMA (+1 more)`     |
-| `{expected_list}` | `T_OPEN, T_CLOSE, T_COMMA or T_NAME`       |
+| {token}           | the token the reading broke on, described in full |
+| {name}            | the name of that token                            |
+| {value}           | the text that token is read from                  |
+| {offset}          | the offset in bytes the reading broke at          |
+| {line}            | the source line the reading broke on              |
+| {column}          | the column within that line                       |
+| {expected}        | `T_OPEN, T_CLOSE, T_COMMA (+1 more)`              |
+| {expected_list}   | `T_OPEN, T_CLOSE, T_COMMA or T_NAME`              |
 
 Write a brace twice to keep it: `@error("use {{name}} here")`. An unknown
 placeholder is reported while the grammar is compiled.
