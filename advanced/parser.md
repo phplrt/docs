@@ -196,7 +196,7 @@ error[UnexpectedTokenException]: Syntax error, unexpected "3" (T_NUMBER), T_PLUS
 What could have been read instead comes from a table the compiler writes down:
 a token is called by its name, and one declared inline stands for what it is
 recognized by - `"+"` for a value, `/\d++/` for a pattern. Several of them read
-as `one of X, Y, Z expected`. A parser built by hand and given no such table
+as `X, Y or Z expected`. A parser built by hand and given no such table
 says nothing about them, and the message ends after the token it stopped on.
 
 The exception carries the token it choked on, so you can build your own

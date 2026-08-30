@@ -265,7 +265,7 @@ $parser->parse(VirtualSource::createFromString('config.txt', <<<'CONF'
 ```
 
 ```
-error[UnexpectedTokenException]: Syntax error, unexpected "=" (T_EQUAL), one of T_BOOLEAN, T_STRING, T_NUMBER expected
+error[UnexpectedTokenException]: Syntax error, unexpected "=" (T_EQUAL), T_BOOLEAN, T_STRING or T_NUMBER expected
  --> config.txt:2:11
 1 | name = "phplrt"
 2 | version = = 4

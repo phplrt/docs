@@ -256,7 +256,7 @@ A fragment is read by nothing, so it does nothing either:
 %fragment WORD  [a-z]++ -> exit()   // ✘ a fragment takes no action
 ```
 
-### channel(x)
+### channel (x)
 
 A [channel](/docs/advanced/lexer#channels) labels a token, so that a reader of the stream
 can tell it apart from the code around it - documentation comments are the
@@ -276,7 +276,7 @@ the one channel left out by default - so these two lines mean the same thing:
 %token T_WHITESPACE  \s++  -> channel(Hidden)
 ```
 
-### state(x) and exit()
+### state (x) and exit ()
 
 `state(x)` hands the reading over to the lexer of a state, and `exit()` gives
 it back, which is how a fragment written in different lexical rules is read -
@@ -376,10 +376,10 @@ A rule may declare a token right where it reads it, without naming it. There
 are two spellings, and the difference is whether what you write is text or an
 expression:
 
-| Written | Means                                             |
-|---------|---------------------------------------------------|
-| `"..."` | the **text** to read, exactly as it is written     |
-| `/.../` | the **regular expression** recognizing the token   |
+| Written | Means                                            |
+|---------|--------------------------------------------------|
+| `"..."` | the **text** to read, exactly as it is written   |
+| `/.../` | the **regular expression** recognizing the token |
 
 ```pp3
 Sum  : <T_NUMBER> "+" <T_NUMBER> ;          // a plus sign
@@ -441,15 +441,15 @@ Rule : <T_A> (<T_B> | <T_C>) <T_D> ;
 
 Any token, rule or group can be followed by one:
 
-| Written    | Means                     |
-|------------|---------------------------|
-| `e?`       | zero or one time          |
-| `e*`       | zero or more times        |
-| `e+`       | one or more times         |
-| `e{3}`     | exactly three times       |
-| `e{2,5}`   | between two and five      |
-| `e{2,}`    | two or more               |
-| `e{,5}`    | up to five                |
+| Written  | Means                |
+|----------|----------------------|
+| `e?`     | zero or one time     |
+| `e*`     | zero or more times   |
+| `e+`     | one or more times    |
+| `e{3}`   | exactly three times  |
+| `e{2,5}` | between two and five |
+| `e{2,}`  | two or more          |
+| `e{,5}`  | up to five           |
 
 ```pp3
 Arguments : Argument() (::T_COMMA:: Argument())* ;
@@ -501,6 +501,84 @@ Two things to keep in mind:
 
 This is the one thing in a rule body that describes *how* something is read
 rather than *what* the language contains, which is why EBNF has no equivalent.
+
+## Error Messages
+
+By default a failure is reported by the tokens that could have been read:
+
+```
+Syntax error, unexpected "," (T_COMMA), T_NAME or T_STRING expected
+```
+
+`@error(...)` replaces that with your own sentence. Write it after the element
+it describes:
+
+```pp3
+Call
+  : <T_NAME>
+    ::T_PARENTHESIS_OPEN::
+    ArgumentList()?
+    ::T_PARENTHESIS_CLOSE:: @error("The argument list is never closed")
+  ;
+```
+
+```
+error[UnexpectedTokenException]: The argument list is never closed
+1 | foo(1, 2
+  |         ^
+```
+
+Write it after a rule name to describe the whole rule:
+
+```pp3
+Statement @error("a statement is expected")
+  : Assignment() | Call() | Return()
+  ;
+```
+
+The rule the message belongs to becomes the code of the exception, counted from
+one. When messages are nested, the innermost one wins.
+
+### Placeholders
+
+A message may ask about what the reading broke on, in braces, the way a logger
+does:
+
+```pp3
+@error("unexpected {value} on line {line}, a closing brace is expected")
+```
+
+| Placeholder       | Is                                                |
+|-------------------|---------------------------------------------------|
+| `{token}`         | the token the reading broke on, described in full |
+| `{name}`          | the name of that token                            |
+| `{value}`         | the text that token is read from                  |
+| `{offset}`        | the offset in bytes the reading broke at          |
+| `{line}`          | the source line the reading broke on              |
+| `{column}`        | the column within that line                       |
+| `{expected}`      | `T_OPEN, T_CLOSE, T_COMMA (+1 more)`     |
+| `{expected_list}` | `T_OPEN, T_CLOSE, T_COMMA or T_NAME`       |
+
+Write a brace twice to keep it: `@error("use {{name}} here")`. An unknown
+placeholder is reported while the grammar is compiled.
+
+### Where A Message Fires
+
+A message fires once the parser has entered the element and could not finish
+it. Put it past the token that commits the rule, never on that token itself:
+
+```pp3
+Call : <T_NAME> @error("...") ::T_PARENTHESIS_OPEN:: ;   // ✘ never fires
+Call : <T_NAME> ::T_PARENTHESIS_OPEN:: @error("...") ;   // ✔
+```
+
+A message that could never fire is a compilation error, pointed at the line it
+is written on. So is a message on something that always matches (`X?`, `X*`),
+or one written inside a repetition or a predicate.
+
+The rule the grammar starts at is the exception - its message covers every
+failure the rules inside it leave undescribed, including a source that has been
+read only in part.
 
 ## Reducers
 
