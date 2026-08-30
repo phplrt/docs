@@ -10,30 +10,44 @@ Phplrt is installed with [composer](https://getcomposer.org/doc/00-intro.md).
 
 ## Everything At Once
 
-The simplest way to start is to install the whole project:
-
 ```bash
 composer require phplrt/phplrt
 ```
 
-This gives you the lexer, the parser, the builders and the grammar compiler.
+This installs **everything**: the runtime, the builders, the grammar compiler
+and what a code generator needs along with it - a console, a template engine
+and a code printer.
+
+Use it to try phplrt out in a single file. DO NOT USE it in an application:
+the whole toolchain ends up in production, where only the runtime belongs.
 
 ## Only What You Need
 
-Every component is also published on its own, so you can install just the
-parts you actually use. This matters in production: the compiler reads
-grammar files and generates code, which is something you normally do while
-developing, not while serving requests.
+Install the runtime where the parser runs, and the compiler only where
+grammars are built:
 
 ```bash
-# Runtime: reads source code and parses it
 composer require phplrt/runtime
-
-# Development: turns a grammar file into a lexer and a parser
 composer require phplrt/compiler --dev
 ```
 
-Here is the full list:
+```json
+{
+    "require": {
+        "phplrt/runtime": "^4.0"
+    },
+    "require-dev": {
+        "phplrt/compiler": "^4.0"
+    }
+}
+```
+
+A generated parser is plain PHP that refers to the runtime alone, so the
+compiler never has to be shipped. It is needed in production only when the
+grammar file itself is read on every run - fine for a script or a one-off
+tool, slower for anything else.
+
+`phplrt/runtime` is a metapackage. Name the pieces yourself if you prefer:
 
 | Package                  | What it does                                                    |
 |--------------------------|-----------------------------------------------------------------|
@@ -53,37 +67,3 @@ As with any composer package, include the autoloader:
 ```php
 require __DIR__ . '/vendor/autoload.php';
 ```
-
-## Which Packages Do I Actually Ship?
-
-It depends on how you use phplrt.
-
-**If you generate a parser** (recommended), the generated file is plain PHP
-that only refers to the runtime. The compiler is a development dependency:
-
-```json
-{
-    "require": {
-        "phplrt/runtime": "^4.0"
-    },
-    "require-dev": {
-        "phplrt/compiler": "^4.0"
-    }
-}
-```
-
-Or name the pieces yourself, if you would rather not pull in a metapackage:
-
-```json
-{
-    "require": {
-        "phplrt/lexer": "^4.0",
-        "phplrt/parser": "^4.0",
-        "phplrt/source": "^4.0"
-    }
-}
-```
-
-**If you read the grammar file at runtime**, you need `phplrt/compiler` in
-production too. That is fine for a script or a one-off tool, but it is slower:
-the grammar has to be read and compiled on every run.
