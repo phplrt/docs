@@ -205,6 +205,9 @@ directory missing on the way is created.
 | `--namespace`       | The namespace to declare it in                          |
 | `-u`, `--use`       | A class to import; repeat it for more than one          |
 | `--php`             | The PHP version to generate for, `8.1` and above        |
+| `--no-readonly`     | Leave the `@readonly` annotation out                    |
+| `--abstract`        | Declare the class abstract                              |
+| `--final`           | Declare the class final                                 |
 
 ```bash
 php vendor/bin/phplrt compile resources/grammar.pp3 src/Parser/SumParser.php \
@@ -240,6 +243,24 @@ php vendor/bin/phplrt compile resources/grammar.pp3 src/Parser.php \
     --class Parser \
     --php 8.1
 ```
+
+**`--abstract`, `--final` and `--no-readonly` shape the declaration.** An
+abstract parser is the base of a parser written by hand, and the annotation is
+what a parser of one's own drops to add state of its own:
+
+```bash
+php vendor/bin/phplrt compile resources/grammar.pp3 src/CompiledParser.php \
+    --class CompiledParser \
+    --abstract \
+    --no-readonly
+```
+
+```php
+abstract class CompiledParser extends \Phplrt\Parser\Parser { /* ... */ }
+```
+
+A modifier is written onto a declaration, so `--abstract` and `--final` both
+ask for `--class`, and neither goes with the other.
 
 **Leave `--class` out** and the file returns an anonymous parser instead of
 declaring anything:
