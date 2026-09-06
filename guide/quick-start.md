@@ -316,7 +316,7 @@ real method:
 ```php
 namespace App\Config;
 
-readonly class CompiledConfigParser extends \Phplrt\Parser\Parser
+class CompiledConfigParser implements \Phplrt\Contracts\Parser\ParserInterface
 {
     public const int T_WHITESPACE = 0;
     public const int T_COMMENT = 1;
@@ -325,7 +325,8 @@ readonly class CompiledConfigParser extends \Phplrt\Parser\Parser
 
     public function __construct()
     {
-        parent::__construct(/* the whole grammar, inlined */);
+        $this->lexer = /* the whole lexer, inlined */;
+        $this->parser = /* the whole grammar, inlined */;
     }
 
     private static function reduceString(\Phplrt\Parser\Context $ctx, mixed $children): mixed

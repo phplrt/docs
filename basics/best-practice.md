@@ -63,8 +63,9 @@ final readonly class JsonParser extends CompiledJsonParser
 
 Two things the compiler decides for you, and one convention worth adopting:
 
-- **The generated class is `readonly`**, because `Phplrt\Parser\Parser` is. A
-  subclass has to be `readonly` too.
+- **The generated class is `readonly`**, so a subclass has to be `readonly`
+  too. One that needs a property of its own to be reassigned is generated
+  with `withReadonly(false)`.
 - **Its constructor takes no arguments** and builds the whole grammar, so your
   own constructor has to call `parent::__construct()`.
 - **Name the two classes differently on purpose.** `CompiledJsonParser` is
@@ -226,9 +227,52 @@ final readonly class JsonParser extends CompiledJsonParser
 ```
 
 The generated class carries a `TResult` template parameter, so
-`@template-extends` tells a static analyser what a parse produces - including
-through `analyze()`, whose result is a `SuccessfulResult<TResult>` or a
-`FailureResult`:
+`@template-extends` tells a static analyser what a parse produces.
+
+The explicit return type does the same for everything that does not read
+docblocks: an IDE, an `instanceof` check, and PHP itself. Narrowing `mixed`
+down to a class is a legal override, and it fails loudly the day a reducer
+starts returning something else.
+
+## Reach The Runtime Behind The Parser
+
+A generated parser implements
+[`ParserInterface`](/docs/contracts/parser) and nothing more, so `parse()` is
+the whole of it. The runtime doing the reading sits in two protected
+properties - `$parser` and `$lexer` - and a class of your own is what puts any
+of it back on the surface.
+
+[`analyze()`](/docs/advanced/parser#analysing-a-source) is the one worth
+having back, since it reports what the grammar made of a source instead of
+throwing:
+
+```php
+namespace App\Json;
+
+use Phplrt\Contracts\Source\ReadableInterface;
+use Phplrt\Parser\Analysis\Mode;
+use Phplrt\Parser\Analysis\Result\FailureResult;
+use Phplrt\Parser\Analysis\Result\SuccessfulResult;
+use Phplrt\Parser\Parser;
+
+/**
+ * @template-extends CompiledJsonParser<JsonValue>
+ */
+final readonly class JsonParser extends CompiledJsonParser
+{
+    /**
+     * @return SuccessfulResult<JsonValue>|FailureResult
+     */
+    public function analyze(
+        ReadableInterface $source,
+        Mode $mode = Mode::Tolerant,
+    ): SuccessfulResult|FailureResult {
+        \assert($this->parser instanceof Parser);
+
+        return $this->parser->analyze($source, $mode);
+    }
+}
+```
 
 ```php
 $result = $parser->analyze($source);
@@ -238,10 +282,9 @@ if ($result instanceof SuccessfulResult) {
 }
 ```
 
-The explicit return type does the same for everything that does not read
-docblocks: an IDE, an `instanceof` check, and PHP itself. Narrowing `mixed`
-down to a class is a legal override, and it fails loudly the day a reducer
-starts returning something else.
+The property is typed by the contract rather than by the runtime, which is
+why the assertion is there: `ParserInterface` promises `parse()` alone.
+`$this->lexer` reads the same way, for a token stream without a parse.
 
 ## Widen The Input If You Want To
 
@@ -321,6 +364,6 @@ $parser->parse(\fopen('php://stdin', 'rb'));
 ```
 
 Widening a parameter is a legal override, and the contract survives it: every
-`ReadableInterface` a caller could pass before is still accepted. If your code
-reaches for `analyze()` as well, give it the same treatment - it takes the same
-argument.
+`ReadableInterface` a caller could pass before is still accepted. An
+`analyze()` of your own takes the same argument, so give it the same
+treatment.

@@ -223,7 +223,7 @@ namespace App\Parser;
 use App\Ast\Node;
 use App\Ast\Number;
 
-class SumParser extends \Phplrt\Parser\Parser { /* ... */ }
+class SumParser implements \Phplrt\Contracts\Parser\ParserInterface { /* ... */ }
 ```
 
 ```php
@@ -256,7 +256,7 @@ php vendor/bin/phplrt compile resources/grammar.pp3 src/CompiledParser.php \
 ```
 
 ```php
-abstract class CompiledParser extends \Phplrt\Parser\Parser { /* ... */ }
+abstract class CompiledParser implements \Phplrt\Contracts\Parser\ParserInterface { /* ... */ }
 ```
 
 A modifier is written onto a declaration, so `--abstract` and `--final` both
@@ -270,7 +270,7 @@ php vendor/bin/phplrt compile resources/grammar.pp3 build/parser.php
 ```
 
 ```php
-return new class extends \Phplrt\Parser\Parser { /* ... */ };
+return new class implements \Phplrt\Contracts\Parser\ParserInterface { /* ... */ };
 ```
 
 ```php

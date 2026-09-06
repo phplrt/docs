@@ -158,27 +158,33 @@ namespace App\Calculator;
  *           be edited by hand
  */
 
-class SumParser extends \Phplrt\Parser\Parser
+readonly class SumParser implements \Phplrt\Contracts\Parser\ParserInterface
 {
     public const int T_WHITESPACE = 0;
     public const int T_DIGIT = 1;
     public const int T_PLUS = 2;
 
+    protected readonly \Phplrt\Contracts\Parser\ParserInterface $parser;
+
+    protected readonly \Phplrt\Contracts\Lexer\LexerInterface $lexer;
+
     public function __construct()
     {
-        parent::__construct(
-            lexer: new \Phplrt\Lexer\Lexer(
-                pattern: '/\G(?|(?:(?:\s++)(*MARK:0))|(?:(?:\d++)(*MARK:1))|...',
-                channels: [
-                    'Hidden',
-                    3 => 'Unknown',
-                ],
-                names: [
-                    'T_WHITESPACE',
-                    'T_DIGIT',
-                    'T_PLUS',
-                ],
-            ),
+        $this->lexer = new \Phplrt\Lexer\Lexer(
+            pattern: '/\G(?|(?:(?:\s++)(*MARK:0))|(?:(?:\d++)(*MARK:1))|...',
+            channels: [
+                'Hidden',
+                3 => 'Unknown',
+            ],
+            names: [
+                'T_WHITESPACE',
+                'T_DIGIT',
+                'T_PLUS',
+            ],
+        );
+
+        $this->parser = new \Phplrt\Parser\Parser(
+            lexer: $this->lexer,
             grammar: [
                 new \Phplrt\Parser\Grammar\Concatenation([1, 2]),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_DIGIT, true),
@@ -196,6 +202,11 @@ class SumParser extends \Phplrt\Parser\Parser
             choicePrediction: [ /* ... */ ],
             expectations: [ /* ... */ ],
         );
+    }
+
+    public function parse(\Phplrt\Contracts\Source\ReadableInterface $source): mixed
+    {
+        return $this->parser->parse($source);
     }
 
     private static function reduceSum(\Phplrt\Parser\Context $ctx, mixed $children): mixed
@@ -254,8 +265,17 @@ creates the missing directories on the way.
 
 ## Shaping The Declaration
 
-The declared parser is annotated `@readonly`, and nothing but the constructor
-writes to it. Where a parser of one's own adds state, drop the annotation:
+The declared parser is readonly, and nothing but the constructor writes to it.
+How that is spelled follows the version it is generated for: a declaration from
+PHP 8.2 up, an annotation below it.
+
+| Target      | Named parser              | Anonymous parser         |
+|-------------|---------------------------|--------------------------|
+| PHP 8.1     | `@readonly` + `class`     | nothing                  |
+| PHP 8.2     | `readonly class`          | nothing                  |
+| PHP 8.3+    | `readonly class`          | `new readonly class`     |
+
+Where a parser of one's own adds state, drop it:
 
 ```php
 (new Compiler())
@@ -267,7 +287,7 @@ writes to it. Where a parser of one's own adds state, drop the annotation:
 ```
 
 ```php
-class LanguageParser extends \Phplrt\Parser\Parser { /* ... */ }
+class LanguageParser implements \Phplrt\Contracts\Parser\ParserInterface { /* ... */ }
 ```
 
 A parser is also declared `abstract`, for a grammar that is the base of a parser
@@ -285,11 +305,11 @@ use Phplrt\Compiler\Generator\ClassModifier;
 ```
 
 ```php
-abstract class CompiledLanguageParser extends \Phplrt\Parser\Parser { /* ... */ }
+abstract readonly class CompiledLanguageParser implements \Phplrt\Contracts\Parser\ParserInterface { /* ... */ }
 ```
 
 ```php
-final class LanguageParser extends CompiledLanguageParser
+final readonly class LanguageParser extends CompiledLanguageParser
 {
     // the methods the reducers of the grammar call
 }
@@ -338,7 +358,7 @@ version you support, and the file loads everywhere above it.
 With a class name, you get a declaration:
 
 ```php
-class LanguageParser extends \Phplrt\Parser\Parser { /* ... */ }
+class LanguageParser implements \Phplrt\Contracts\Parser\ParserInterface { /* ... */ }
 ```
 
 ```php
@@ -348,7 +368,7 @@ $parser = new App\Parser\LanguageParser();
 Without one, the file *returns* an anonymous parser:
 
 ```php
-return new class extends \Phplrt\Parser\Parser { /* ... */ };
+return new class implements \Phplrt\Contracts\Parser\ParserInterface { /* ... */ };
 ```
 
 ```php
