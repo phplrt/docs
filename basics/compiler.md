@@ -270,15 +270,17 @@ writes to it. Where a parser of one's own adds state, drop the annotation:
 class LanguageParser extends \Phplrt\Parser\Parser { /* ... */ }
 ```
 
-A generated parser is also declared abstract, for a grammar that is the base of
-a parser written by hand:
+A parser is also declared `abstract`, for a grammar that is the base of a parser
+written by hand, or `final`, for one nothing is meant to extend:
 
 ```php
+use Phplrt\Compiler\Generator\ClassModifier;
+
 (new Compiler())
     ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->generate()
         ->withClassName('CompiledLanguageParser')
-        ->withAbstract()
+        ->withClassModifier(ClassModifier::Abstract)
         ->save(__DIR__ . '/CompiledLanguageParser.php');
 ```
 
@@ -293,12 +295,18 @@ final class LanguageParser extends CompiledLanguageParser
 }
 ```
 
-An abstract parser is named by definition, so asking for one without a class
-name is reported:
+| Modifier                   | Declaration      |
+|----------------------------|------------------|
+| `ClassModifier::Default`   | `class`          |
+| `ClassModifier::Abstract`  | `abstract class` |
+| `ClassModifier::Final`     | `final class`    |
+
+A modifier is written onto a declaration, which an anonymous parser has none
+of, so asking for one without a class name is reported:
 
 ```
-error[UnsupportedAbstractClassException]: An abstract parser cannot be anonymous
-and must be declared under a name of its own
+error[UnsupportedClassModifierException]: An anonymous parser cannot be
+declared as abstract
 ```
 
 ## Choosing The PHP Version To Generate For
