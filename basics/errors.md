@@ -308,7 +308,8 @@ The same renderer can be chosen for a single error rather than for the whole
 printer:
 
 ```php
-echo $printer->print($e)->withRenderer(new CompactRenderer());
+echo $printer->print($e)
+    ->withRenderer(new CompactRenderer());
 ```
 
 ## Self-Printing Exceptions
@@ -351,7 +352,8 @@ and the fragment through the contract:
 ```php
 public function __toString(): string
 {
-    return (string) new ErrorPrinter()->print($this);
+    return (string) new ErrorPrinter()
+        ->print($this);
 }
 ```
 

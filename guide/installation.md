@@ -4,7 +4,7 @@ Phplrt is installed with [composer](https://getcomposer.org/doc/00-intro.md).
 
 ## Requirements
 
-  * PHP 8.4 or above
+  * PHP 8.1 or above
   * [PCRE Extension](https://php.net/manual/en/book.pcre.php)
   * [Mbstring Extension](https://www.php.net/manual/en/mbstring.installation.php) (recommended)
 

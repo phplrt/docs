@@ -4,7 +4,11 @@ A JSON parser that produces plain PHP values - the result matches
 `json_decode($input, true)` exactly.
 
 ```php
-$parser->parse(StringSource::createFromString('{"a": 1, "b": [true, null]}'))->value;
+$result = $parser->parse(StringSource::createFromString(
+    content: '{"a": 1, "b": [true, null]}',
+));
+
+var_dump($result->value);
 // ['a' => 1, 'b' => [true, null]]
 ```
 
@@ -114,7 +118,7 @@ $parser = new Compiler()
     ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
     ->getParser();
 
-$data = $parser->parse(StringSource::createFromString($json))->value;
+$result = $parser->parse(StringSource::createFromString($json));
 ```
 
 Two details worth stealing for your own grammars. `Member` has no reducer, so

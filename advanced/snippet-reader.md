@@ -15,8 +15,11 @@ web page highlighting the error, or an editor jumping to it.
 use Phplrt\Exception\Analyzer;
 use Phplrt\Exception\SnippetReader;
 
-$result = new Analyzer()->analyze($e);
-$lines = new SnippetReader()->read($result, lines: 1);
+$result = new Analyzer()
+    ->analyze($e);
+
+$lines = new SnippetReader()
+    ->read($result, lines: 1);
 ```
 
 The result is indexed by the line numbers, so the keys are as meaningful as
@@ -127,13 +130,14 @@ use Phplrt\Exception\SnippetReader;
 use Phplrt\Position\Position;
 use Phplrt\Source\FileSource;
 
-$lines = new SnippetReader()->read(new FailureResult(
-    class: '',
-    message: '',
-    source: FileSource::createFromPathname('config.txt'),
-    position: new Position(),
-    interval: new FailureInterval(offset: 26, length: 4),
-), lines: 2);
+$lines = new SnippetReader()
+    ->read(new FailureResult(
+        class: '',
+        message: '',
+        source: FileSource::createFromPathname('config.txt'),
+        position: new Position(),
+        interval: new FailureInterval(offset: 26, length: 4),
+    ), lines: 2);
 ```
 
 An error covering no fragment of its own - an ordinary exception, which knows

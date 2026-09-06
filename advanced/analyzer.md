@@ -17,7 +17,8 @@ own renderer.
 ```php
 use Phplrt\Exception\Analyzer;
 
-$result = new Analyzer()->analyze($e);
+$result = new Analyzer()
+    ->analyze($e);
 
 $result->class;    // the class of the exception, or an empty string
 $result->message;  // the message of the exception, or an empty string

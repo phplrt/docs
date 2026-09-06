@@ -158,7 +158,7 @@ namespace App\Calculator;
  *           be edited by hand
  */
 
-readonly class SumParser extends \Phplrt\Parser\Parser
+class SumParser extends \Phplrt\Parser\Parser
 {
     public const int T_WHITESPACE = 0;
     public const int T_DIGIT = 1;
@@ -252,12 +252,36 @@ new Compiler()
 `save()` is the only method that does anything: it writes the code down and
 creates the missing directories on the way.
 
+## Choosing The PHP Version To Generate For
+
+The parser is generated for the PHP the generator itself runs on. Where the
+parser is meant to run somewhere else, say so:
+
+```php
+use Phplrt\Compiler\Generator\TargetPhpVersion;
+
+new Compiler()
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
+    ->generate()
+        ->withClassName('LanguageParser')
+        ->withTargetPhpVersion(TargetPhpVersion::Php81)
+        ->save(__DIR__ . '/LanguageParser.php');
+```
+
+The lowest target is `TargetPhpVersion::Php81`, and a version is also read
+from a string: `TargetPhpVersion::fromString('8.1')`.
+
+This matters when the parser is committed rather than built on the machine
+that runs it - a library generating on 8.4 and shipping to users on 8.1, or
+a build step running on a newer PHP than production. Generate for the lowest
+version you support, and the file loads everywhere above it.
+
 ## Named Class or Anonymous?
 
 With a class name, you get a declaration:
 
 ```php
-readonly class LanguageParser extends \Phplrt\Parser\Parser { /* ... */ }
+class LanguageParser extends \Phplrt\Parser\Parser { /* ... */ }
 ```
 
 ```php
@@ -267,7 +291,7 @@ $parser = new App\Parser\LanguageParser();
 Without one, the file *returns* an anonymous parser:
 
 ```php
-return new readonly class extends \Phplrt\Parser\Parser { /* ... */ };
+return new class extends \Phplrt\Parser\Parser { /* ... */ };
 ```
 
 ```php

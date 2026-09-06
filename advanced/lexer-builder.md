@@ -152,9 +152,14 @@ A channel is a label on a token, and it is declared where the token is:
 ```php
 use Phplrt\Contracts\Lexer\Channel;
 
-$builder->addPattern('\s++')->setChannel(Channel::Hidden);
-$builder->addPattern('\s++')->hide();  // the same, shorter
-$builder->addPattern('\s++')->show();  // back to Default
+$builder->addPattern('\s++')
+    ->setChannel(Channel::Hidden);
+    
+$builder->addPattern('\s++')
+    ->hide();  // the same, shorter
+    
+$builder->addPattern('\s++')
+    ->show();  // back to Default
 ```
 
 There are four built-in channels:
@@ -178,8 +183,10 @@ Give it a channel of its own:
 
 ```php
 $builder->addPattern('\d++', 'T_DIGIT');
-$builder->addPattern('//[^\n]*+', 'T_COMMENT')->setChannel('comments');
-$builder->addPattern('\s++')->hide();
+$builder->addPattern('//[^\n]*+', 'T_COMMENT')
+    ->setChannel('comments');
+$builder->addPattern('\s++')
+    ->hide();
 
 foreach ($lexer->lex(StringSource::createFromString("1 // hi\n2")) as $token) {
     echo $token->name, ' on ', $token->channel->name, "\n";

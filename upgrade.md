@@ -6,13 +6,6 @@ Version 4.0 is a rewrite, so this is a porting guide rather than a list of
 renames. The grammar files mostly survive, and that is where the bulk of the
 work usually lives.
 
-### PHP 8.4 Required
-
-> Likelihood Of Impact: **High**
-
-The API uses property hooks, asymmetric visibility and `new` in initializers
-throughout - which is also why so much of it looks different.
-
 ### Getters Became Properties
 
 > Likelihood Of Impact: **High**

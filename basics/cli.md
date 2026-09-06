@@ -204,6 +204,7 @@ directory missing on the way is created.
 | `-c`, `--class`     | The class name to declare                               |
 | `--namespace`       | The namespace to declare it in                          |
 | `-u`, `--use`       | A class to import; repeat it for more than one          |
+| `--php`             | The PHP version to generate for, `8.1` and above        |
 
 ```bash
 php vendor/bin/phplrt compile resources/grammar.pp3 src/Parser/SumParser.php \
@@ -219,7 +220,7 @@ namespace App\Parser;
 use App\Ast\Node;
 use App\Ast\Number;
 
-readonly class SumParser extends \Phplrt\Parser\Parser { /* ... */ }
+class SumParser extends \Phplrt\Parser\Parser { /* ... */ }
 ```
 
 ```php
@@ -230,6 +231,16 @@ Imports are what makes the PHP inside a grammar readable - `new Node(...)`
 instead of `new \App\Ast\Node(...)` - at the price of a grammar that only
 works when it is generated. See [Results and Reducers](/docs/basics/reducers).
 
+**`--php` picks the PHP the parser is written for.** Without it the parser is
+written for the PHP running the command, which is wrong whenever the file is
+committed and run somewhere older:
+
+```bash
+php vendor/bin/phplrt compile resources/grammar.pp3 src/Parser.php \
+    --class Parser \
+    --php 8.1
+```
+
 **Leave `--class` out** and the file returns an anonymous parser instead of
 declaring anything:
 
@@ -238,7 +249,7 @@ php vendor/bin/phplrt compile resources/grammar.pp3 build/parser.php
 ```
 
 ```php
-return new readonly class extends \Phplrt\Parser\Parser { /* ... */ };
+return new class extends \Phplrt\Parser\Parser { /* ... */ };
 ```
 
 ```php
