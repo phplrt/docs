@@ -252,6 +252,55 @@ new Compiler()
 `save()` is the only method that does anything: it writes the code down and
 creates the missing directories on the way.
 
+## Shaping The Declaration
+
+The declared parser is annotated `@readonly`, and nothing but the constructor
+writes to it. Where a parser of one's own adds state, drop the annotation:
+
+```php
+(new Compiler())
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
+    ->generate()
+        ->withClassName('LanguageParser')
+        ->withReadonly(false)
+        ->save(__DIR__ . '/LanguageParser.php');
+```
+
+```php
+class LanguageParser extends \Phplrt\Parser\Parser { /* ... */ }
+```
+
+A generated parser is also declared abstract, for a grammar that is the base of
+a parser written by hand:
+
+```php
+(new Compiler())
+    ->load(FileSource::createFromPathname(__DIR__ . '/grammar.pp3'))
+    ->generate()
+        ->withClassName('CompiledLanguageParser')
+        ->withAbstract()
+        ->save(__DIR__ . '/CompiledLanguageParser.php');
+```
+
+```php
+abstract class CompiledLanguageParser extends \Phplrt\Parser\Parser { /* ... */ }
+```
+
+```php
+final class LanguageParser extends CompiledLanguageParser
+{
+    // the methods the reducers of the grammar call
+}
+```
+
+An abstract parser is named by definition, so asking for one without a class
+name is reported:
+
+```
+error[UnsupportedAbstractClassException]: An abstract parser cannot be anonymous
+and must be declared under a name of its own
+```
+
 ## Choosing The PHP Version To Generate For
 
 The parser is generated for the PHP the generator itself runs on. Where the
