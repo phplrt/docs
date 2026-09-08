@@ -51,8 +51,11 @@ use Phplrt\Lexer\Lexer;
 Lexer::DEFAULT_SKIP_CHANNELS; // [Channel::Hidden]
 ```
 
-Nothing stands between the lexer and the grammar, so this is also the answer to
-"what does the parser see": whatever the lexer reports.
+Nothing stands between the lexer and the grammar, so whatever the lexer reports
+reaches the parser. What the parser *reads* is another matter: it steps over a
+token on a channel of your own unless a rule
+[names it](/docs/basics/grammar#channel-x). Skipping it here means no rule can
+ask for it at all.
 
 The list is a setting of the lexer, so it goes where the lexer is put together:
 
