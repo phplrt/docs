@@ -217,6 +217,25 @@ failing wins the report, even if a different alternative was the intended one.
 
 See [Error Reporting](/docs/basics/errors) for the full picture.
 
+## Starting At Another Rule
+
+A grammar starts where `%pragma root` says, and `withInitial()` returns a parser
+starting somewhere else:
+
+```php
+$parser->parse($source);                       // parses from a "root"
+
+$parser->withInitial(Parser::RuleName)
+    ->parse($source);                          // parses a subrule
+```
+
+The rule has to be marked with `#` in the grammar, which is what puts its
+identifier on the parser as a constant - see
+[Kept Rules](/docs/basics/grammar#kept-rules).
+
+The parser is left as it was (has been cloned), so one grammar serves several 
+entry points at once.
+
 ## Input Must Be Consumed Entirely
 
 A parse succeeds only if the grammar reads the whole source. Trailing junk is

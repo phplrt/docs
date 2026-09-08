@@ -342,6 +342,34 @@ Expression
   ;
 ```
 
+### Kept Rules
+
+The compiler is free to remove a rule, join it with the one above it, or merge
+it with an equal one, and a name of its own does not save it. A `#` before the
+name does:
+
+```pp3
+#UnionType
+  : Name() ("|" Name())*
+  ;
+```
+
+A kept rule survives the compilation as it is written, its identifier becomes a
+constant of the generated parser, and the analysis may be started at it:
+
+```php
+$parser->parse(StringSource::createFromString('Generic<T>'));
+
+$union = $parser->withInitial(TypeParser::UnionType);
+$union->parse(StringSource::createFromString('int|string')); // ok
+$union->parse(StringSource::createFromString('Generic<T>')); // error
+```
+
+> Marking a rule costs the optimizations the compiler would have applied to it,
+so mark the rules you mean to start at and no others. Nothing else about the
+rule changes - it recognizes the same input and hands its reducer the same
+value it would have without the marker.
+
 ### Token References
 
 Two spellings, and the difference is whether the token ends up in the result:
@@ -388,7 +416,7 @@ Expr : <T_NUMBER> /and|or|xor/ <T_NUMBER> ; // one of three words
 
 Quotes are the one you want for punctuation: nothing inside them is special,
 so `"+"`, `"("` and `"**"` mean exactly what they look like. Slashes are for
-when you need a choice, a character class or a quantifier.
+when you need a choice, a character class, or a quantifier.
 
 The same token written in several rules is declared **once**, and such a token
 is always discarded - it is punctuation by definition:
@@ -439,7 +467,7 @@ Rule : <T_A> (<T_B> | <T_C>) <T_D> ;
 
 ### Quantifiers
 
-Any token, rule or group can be followed by one:
+Any token, rule, or group can be followed by one:
 
 | Written  | Means                |
 |----------|----------------------|
