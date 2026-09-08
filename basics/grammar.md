@@ -84,6 +84,11 @@ but they never leave the lexer and do not clutter the grammar:
 %skip T_COMMENT     //[^\n]*+
 ```
 
+A skipped token is never built, so a rule cannot refer to one. When a rule
+needs to know that nothing was skipped in a given place, say so with
+[`~`](#adjacency); when it needs the token itself, declare it on a
+[channel](/docs/advanced/lexer#channels) instead.
+
 **Order matters.** The lexer takes the first pattern that matches, not the
 longest one, so a longer token is declared before a shorter one it starts
 with:
@@ -366,9 +371,9 @@ $union->parse(StringSource::createFromString('Generic<T>')); // error
 ```
 
 > Marking a rule costs the optimizations the compiler would have applied to it,
-so mark the rules you mean to start at and no others. Nothing else about the
-rule changes - it recognizes the same input and hands its reducer the same
-value it would have without the marker.
+> so mark the rules you mean to start at and no others. Nothing else about the
+> rule changes, it recognizes the same input and hands its reducer the same
+> value it would have without the marker.
 
 ### Token References
 
@@ -527,8 +532,108 @@ Two things to keep in mind:
 - it costs a real attempt at matching. `!Expression()` will parse a whole
   expression and throw it away, so prefer looking ahead at a token.
 
-This is the one thing in a rule body that describes *how* something is read
-rather than *what* the language contains, which is why EBNF has no equivalent.
+Along with [adjacency](#adjacency), this is what a rule body says about *how*
+something is read rather than about *what* the language contains, which is why
+EBNF has no equivalent.
+
+### Adjacency
+
+A skipped token never leaves the lexer, so the parser cannot tell `Some\Any`
+from `Some \ Any` - both reach it as the very same three tokens. `~` between
+two statements says that their tokens are written with **nothing in between**:
+
+```pp3
+%skip  T_WHITESPACE     \s++
+%token T_NAME           \w++
+%token T_NS_SEPARATOR   \\
+
+Namespaces : Namespace()+ ;
+
+Namespace
+  // matches "\Some\Any\Class"
+  : ::T_NS_SEPARATOR:: ~ Relative()
+  // matches "Some\Any\Class"
+  | Relative()
+  ;
+
+Relative
+  // repeats zero or more times: 
+  // - ClassName [no whitespace] "\" [no whitespace]
+  : (<T_NAME> ~ ::T_NS_SEPARATOR:: ~)*
+    // end with: 
+    // - ClassName
+    <T_NAME>
+  ;
+```
+
+`Some\Any \Ololo\Trololo` is two names. Without the `~` it is one, because
+nothing in the stream says where the space was.
+
+Like a predicate, it reads nothing and contributes nothing to the tree.
+
+**The answer is read off the source, not off the stream.** Whatever stood
+between the tokens counts, whether the lexer reported it or not:
+
+```pp3
+%skip T_COMMENT /\*.*?\*/
+
+Pair 
+  : <T_NAME> ~ ::T_DOT:: ~ <T_NAME>
+  ;
+```
+
+`a.b` matches. `a/* here */.b` does not.
+
+#### Where It May Stand
+
+`~` compares the token **behind** it, so something before it in the same
+sequence has to have read one. It may not open a sequence, and the statement
+before it may not be optional:
+
+```pp3
+Rule : ~ <T_NAME> ;              // ✘ nothing has been read yet
+Rule : <T_NAME>? ~ ::T_DOT:: ;   // ✘ the name may not be there
+```
+
+Both are reported when the grammar is built. The second one is the trap the
+check exists for: had it been allowed, a missing name would leave `~`
+comparing a token that belongs to whatever stands before the rule. Write an
+alternative per case instead, so that each of them names the tokens it
+compares - which is what `Namespace` above does with its leading separator.
+
+Nothing is asked about what follows, so a sequence **may** end with `~`. That
+is how a repetition says that every turn is written next to the one before it:
+
+```pp3
+Relative : (<T_NAME> ~ ::T_NS_SEPARATOR:: ~)* <T_NAME> ;
+//                                        ^
+//                    ties this turn to the next one
+```
+
+#### Reach For The Lexer First
+
+When the whole thing is regular, the lexer does it better: fewer rules, no
+backtracking, and an error message that names what was expected. The example
+above reads the very same input with no `~` at all:
+
+```pp3
+%token T_NAME_FULLY_QUALIFIED  (\\\w++)++
+%token T_NAME_QUALIFIED        \w++(\\\w++)++
+%token T_NAME                  \w++
+
+Name
+  : <T_NAME_FULLY_QUALIFIED>
+  | <T_NAME_QUALIFIED>
+  | <T_NAME>
+  ;
+```
+
+Declare the longest first: the lexer takes the first pattern that matches
+rather than the longest, as [above](#tokens). This is what PHP itself does,
+and those three spellings are why it has three tokens rather than one.
+
+Keep `~` for what a pattern cannot express: parts that are recursive, or the
+same pair of tokens that has to be adjacent in one rule and apart in another.
 
 ## Error Messages
 
@@ -576,16 +681,16 @@ does:
 @error("unexpected {value} on line {line}, a closing brace is expected")
 ```
 
-| Placeholder       | Is                                                |
-|-------------------|---------------------------------------------------|
-| {token}           | the token the reading broke on, described in full |
-| {name}            | the name of that token                            |
-| {value}           | the text that token is read from                  |
-| {offset}          | the offset in bytes the reading broke at          |
-| {line}            | the source line the reading broke on              |
-| {column}          | the column within that line                       |
-| {expected}        | `T_OPEN, T_CLOSE, T_COMMA (+1 more)`              |
-| {expected_list}   | `T_OPEN, T_CLOSE, T_COMMA or T_NAME`              |
+| Placeholder     | Is                                                |
+|-----------------|---------------------------------------------------|
+| {token}         | the token the reading broke on, described in full |
+| {name}          | the name of that token                            |
+| {value}         | the text that token is read from                  |
+| {offset}        | the offset in bytes the reading broke at          |
+| {line}          | the source line the reading broke on              |
+| {column}        | the column within that line                       |
+| {expected}      | `T_OPEN, T_CLOSE, T_COMMA (+1 more)`              |
+| {expected_list} | `T_OPEN, T_CLOSE, T_COMMA or T_NAME`              |
 
 Write a brace twice to keep it: `@error("use {{name}} here")`. An unknown
 placeholder is reported while the grammar is compiled.
