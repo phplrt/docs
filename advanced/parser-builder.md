@@ -95,6 +95,12 @@ $grammar->addRepetition($a, min: 2, max: 5);
 // &a and !a - look ahead without reading
 $grammar->addPredicate($a);
 $grammar->addPredicate($a, isExpected: false);
+
+// a ~ b - the surrounding tokens are written with nothing in between
+$grammar->addConcatenation([$a, $grammar->addAdjacency(), $b]);
+
+// ...and the other way round, which pp3 has no spelling for
+$grammar->addAdjacency(isExpected: false);
 ```
 
 Referring to a token by **definition** is the safest: rename it later and the
@@ -107,17 +113,18 @@ to each other by index - the same array a
 [generated parser](/docs/basics/compiler) carries, which is where you will
 meet these class names if you ever read one:
 
-| Method                 | Class           | Value it produces      |
-|------------------------|-----------------|------------------------|
-| `addTokenReference()`  | `Lexeme`        | the token              |
-| `addConcatenation()`   | `Concatenation` | a list                 |
-| `addRepetition()`      | `Repetition`    | a list                 |
-| `addAlternation()`     | `Alternation`   | whichever matched      |
-| `addOptional()`        | `Optional`      | the rule, or nothing   |
-| `addPredicate()`       | `Predicate`     | nothing - it only looks ahead |
+| Method                | Class           | Value it produces                 |
+|-----------------------|-----------------|-----------------------------------|
+| `addTokenReference()` | `Lexeme`        | the token                         |
+| `addConcatenation()`  | `Concatenation` | a list                            |
+| `addRepetition()`     | `Repetition`    | a list                            |
+| `addAlternation()`    | `Alternation`   | whichever matched                 |
+| `addOptional()`       | `Optional`      | the rule, or nothing              |
+| `addPredicate()`      | `Predicate`     | nothing - it only looks ahead     |
+| `addAdjacency()`      | `Adjacency`     | nothing - it only compares places |
 
-`Lexeme` is the only one matched against the input; the rest are matched by
-means of other rules. The two producing a list are the reason `$children` is
+`Lexeme` and `Adjacency` are the ones matched against the input; the rest are
+matched by other rules. The two producing a list are the reason `$children` is 
 sometimes an array - see
 [What `$children` Contains](/docs/basics/reducers#what-children-contains).
 
@@ -199,7 +206,11 @@ you ship it:
 - **unreachable rules are dropped** - a rule nothing refers to is not
   compiled, and does not have to be correct;
 - **token references are checked** - a rule pointing at a token the lexer does
-  not have is an error;
+  not have is an error, and so is one pointing at a token it skips;
+- **adjacency has something to compare** - `addAdjacency()` needs a statement
+  before it in the same sequence that reads at least one token, so opening a
+  sequence with it, or putting an optional statement in front of it, is an
+  error;
 - **left recursion is rejected**:
 
 ```pp3
@@ -229,12 +240,12 @@ $grammar->addCompilerPass(new MyValidationPass(), ParserBuilder::PASS_PRIORITY_C
 
 The priorities, in the order they run:
 
-| Priority                             | What belongs there                         |
-|--------------------------------------|--------------------------------------------|
-| `PASS_PRIORITY_NORMALIZE`            | Bring the grammar to a canonical shape     |
-| `PASS_PRIORITY_CHECK`                | Reject a grammar that cannot be compiled   |
-| `PASS_PRIORITY_OPTIMIZE`             | Rewrite it, keeping the meaning            |
-| `PASS_PRIORITY_CHECK_AFTER_OPTIMIZE` | Catch an optimization that broke it        |
+| Priority                             | What belongs there                       |
+|--------------------------------------|------------------------------------------|
+| `PASS_PRIORITY_NORMALIZE`            | Bring the grammar to a canonical shape   |
+| `PASS_PRIORITY_CHECK`                | Reject a grammar that cannot be compiled |
+| `PASS_PRIORITY_OPTIMIZE`             | Rewrite it, keeping the meaning          |
+| `PASS_PRIORITY_CHECK_AFTER_OPTIMIZE` | Catch an optimization that broke it      |
 
 `LexerBuilder` runs the same four. Normalizing is where what a token
 definition refers to is written into it, so a
