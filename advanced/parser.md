@@ -245,6 +245,10 @@ an error, not a stopping point:
 $parser->parse(StringSource::createFromString('2 2')); // Syntax error, unexpected "2" (T_DIGIT)
 ```
 
+What the parser steps over does not count as junk, so a source trailing off
+into a token on a [channel](/docs/basics/grammar#channel-x) of its own still
+reads to its end.
+
 ## Analysing A Source
 
 Sometimes that is the wrong rule. The source may hold another language after

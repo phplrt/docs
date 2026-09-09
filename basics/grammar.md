@@ -84,10 +84,10 @@ but they never leave the lexer and do not clutter the grammar:
 %skip T_COMMENT     //[^\n]*+
 ```
 
-A skipped token is never built, so a rule cannot refer to one. When a rule
-needs to know that nothing was skipped in a given place, say so with
-[`~`](#adjacency); when it needs the token itself, declare it on a
-[channel](/docs/advanced/lexer#channels) instead.
+> A skipped token is never built, so a rule cannot refer to one. When a rule
+> needs to know that nothing was skipped in a given place, say so with
+> [`~`](#adjacency); when it needs the token itself, declare it on a
+> [channel](/docs/advanced/lexer#channels) instead.
 
 **Order matters.** The lexer takes the first pattern that matches, not the
 longest one, so a longer token is declared before a shorter one it starts
@@ -280,6 +280,25 @@ the one channel left out by default - so these two lines mean the same thing:
 %skip  T_WHITESPACE  \s++
 %token T_WHITESPACE  \s++  -> channel(Hidden)
 ```
+
+**The parser steps over such a token unless a rule names it** - the same
+ignoring `%skip` does, only one stage later, which is what makes it askable:
+
+```pp3
+%token T_DOC_COMMENT  /\*\*.*?\*/  -> channel(docblocks)
+
+Documented : <T_DOC_COMMENT>? <T_NAME> ;
+Bare       : <T_NAME> ;
+```
+
+`Documented` gets the comment, `Bare` reads the same source without noticing
+it. Otherwise, the reference is ordinary – quantifiers count what they
+read, `::T_X::` discards the value - and a comment left at the end of the file
+is not input the grammar has failed to read.
+
+> The built-in channels are never stepped over: `Hidden` never reaches the
+> parser, `Unknown` is how it reports what nothing recognizes, `EndOfInput` is
+> where it stops.
 
 ### state (x) and exit ()
 
