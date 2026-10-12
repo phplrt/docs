@@ -261,6 +261,16 @@ A fragment is read by nothing, so it does nothing either:
 %fragment WORD  [a-z]++ -> exit()   // ✘ a fragment takes no action
 ```
 
+Neither does a skipped token: it never reaches the parser, so there is nothing
+it could do once it has been read. A region that needs a lexer of its own to
+be read through - a nested comment, say - is declared on a
+[channel](#channel-x) instead:
+
+```pp3
+%skip  T_COMMENT  /\*  -> state(comment)     // ✘ a skipped token takes no action
+%token T_COMMENT  /\*  -> channel(comment), state(comment)   // ✔
+```
+
 ### channel (x)
 
 A [channel](/docs/advanced/lexer#channels) labels a token, so that a reader of the stream
