@@ -603,6 +603,27 @@ Pair
 
 `a.b` matches. `a/* here */.b` does not.
 
+A token of a [channel](/docs/advanced/lexer#channels) of its own is
+something written in between too, the very same way:
+
+```pp3
+%token T_COMMENT /\*.*?\*/ -> channel(comment)
+
+Pair
+  : <T_NAME> ~ ::T_DOT:: ~ <T_NAME>
+  ;
+```
+
+`a/* here */.b` does not match either, and `!~` holds there.
+
+**Even when a rule reads that token by name.** `~` is checked before the
+next statement is read, so it cannot tell whether the comment ahead is
+stepped over or read:
+
+```pp3
+Pair : <T_NAME> ~ <T_COMMENT> ;   // ✘ never matches "a/* here */"
+```
+
 #### Negation
 
 `!` negates `~` the way it negates any other statement: `!~` says that
