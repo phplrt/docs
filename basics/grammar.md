@@ -603,6 +603,22 @@ Pair
 
 `a.b` matches. `a/* here */.b` does not.
 
+#### Negation
+
+`!` negates `~` the way it negates any other statement: `!~` says that
+something **must** be written between the tokens:
+
+```pp3
+%skip  T_WHITESPACE  \s++
+%token T_NAME        [a-z]++
+%token T_NUMBER      \d++
+
+// matches "x 42", but not "x42"
+Argument : <T_NAME> !~ <T_NUMBER> ;
+```
+
+It stands wherever `~` may stand, and follows the same rules below.
+
 #### Where It May Stand
 
 `~` compares the token **behind** it, so something before it in the same
